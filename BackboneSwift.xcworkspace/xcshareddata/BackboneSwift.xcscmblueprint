@@ -1,0 +1,30 @@
+{
+  "DVTSourceControlWorkspaceBlueprintPrimaryRemoteRepositoryKey" : "D46680581AA35CF4332243A8B24A583E399B865A",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyRepositoryLocationsKey" : {
+
+  },
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyStatesKey" : {
+    "F5B4EC300E7199406BA2B2AA6070092FA65DDD89" : 0,
+    "D46680581AA35CF4332243A8B24A583E399B865A" : 0
+  },
+  "DVTSourceControlWorkspaceBlueprintIdentifierKey" : "202C2BFA-4123-44B2-BCC0-C096310C0828",
+  "DVTSourceControlWorkspaceBlueprintWorkingCopyPathsKey" : {
+    "F5B4EC300E7199406BA2B2AA6070092FA65DDD89" : "promiseKit\/PromiseKit\/",
+    "D46680581AA35CF4332243A8B24A583E399B865A" : "BackboneSwift\/"
+  },
+  "DVTSourceControlWorkspaceBlueprintNameKey" : "BackboneSwift",
+  "DVTSourceControlWorkspaceBlueprintVersion" : 204,
+  "DVTSourceControlWorkspaceBlueprintRelativePathToProjectKey" : "BackboneSwift.xcworkspace",
+  "DVTSourceControlWorkspaceBlueprintRemoteRepositoriesKey" : [
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/supersabbath\/BackboneSwift.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "D46680581AA35CF4332243A8B24A583E399B865A"
+    },
+    {
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryURLKey" : "https:\/\/github.com\/supersabbath\/PromiseKit.git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositorySystemKey" : "com.apple.dt.Xcode.sourcecontrol.Git",
+      "DVTSourceControlWorkspaceBlueprintRemoteRepositoryIdentifierKey" : "F5B4EC300E7199406BA2B2AA6070092FA65DDD89"
+    }
+  ]
+}

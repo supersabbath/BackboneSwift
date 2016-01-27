@@ -42,6 +42,10 @@ parse
 */
 
 import UIKit
+import SwiftyJSON
+import Alamofire
+import PromiseKit
+
 
 public protocol BackboneModel
 {
@@ -52,7 +56,7 @@ public protocol BackboneModel
     
     var url:String?{ get set }
     // Functions
-    func parse(response: JSONUtils.JSON)
+    func parse(response: JSONUtils.JSONDictionary)
     func toJSON() -> String
     init()
 }
@@ -69,23 +73,21 @@ public class Model: NSObject , BackboneModel {
     /**
     parse is called whenever a model's data is returned by the server, in fetch, and save. The function is passed the raw response object, and should return the attributes hash to be set on the model. The default implementation is a no-op, simply passing through the JSON response. Override this if you need to work with a preexisting API, or better namespace your responses.
     */
-    public func parse(response: JSONUtils.JSON) {
+    public func parse(response: JSONUtils.JSONDictionary) {
         
         let mirror = Mirror(reflecting: self)
         
-        if let dictionary  = response as? JSONUtils.JSONDictionary {
+        mirror.children.forEach({ [unowned self] (label, value) -> ()  in
             
-            mirror.children.forEach({ [unowned self] (label, value) -> ()  in
-                
-                self.assignToClassVariable(label!, payload: dictionary)
+            self.assignToClassVariable(label!, payload: response)
             })
-        }
+        
     }
     
     /**
      Return a shallow copy of the model's attributes for JSON stringification. This can be used for persistence, serialization, or for augmentation before being sent to the server. The name of this method is a bit confusing, as it doesn't actually return a JSON string
-    
-    */
+     
+     */
     public func toJSON() -> String
     {
         return ""
@@ -105,4 +107,58 @@ public class Model: NSObject , BackboneModel {
         return (object as? String) ?? ""
     }
     
+    
+    /**
+     Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
+     */
+    func fetch(options:HttpOptions? , onSuccess: () ->Void , onError:(BackboneError)->Void){
+        
+        guard let feedURL = url  else {
+            print("Models must have an URL, fetch cancelled")
+            onError(.InvalidURL)
+            return
+        }
+        
+        Alamofire.request(.GET, feedURL , parameters:options?.headers )
+            .responseJSON { [unowned self] response in
+                
+                switch response.result {
+                case .Success:
+                    
+                    if let jsonValue = response.result.value {
+                        if let dic = jsonValue as? JSONUtils.JSONDictionary {
+                            self.parse(dic)
+                            onSuccess()
+                            return
+                        }
+                    }
+                onError(.ParsingError)
+                
+                case .Failure(let error):
+                print(error)
+                onError(.HttpError(description: error.description))
+        }
+    }
+}
+
+
+
+/**
+ Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
+ */
+
+func fetch(options:HttpOptions?=nil) -> Promise <Void>  {
+    
+    return Promise { fulfill, reject in
+        
+        fetch(options, onSuccess: { () -> Void in
+            
+            fulfill()
+            
+            }, onError: { (error) -> Void in
+                
+                reject(error)
+        })
+    }
+}
 }

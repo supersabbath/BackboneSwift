@@ -74,19 +74,21 @@ public struct JSONUtils {
 
     
     public typealias JSON = AnyObject
-    public typealias JSONDictionary = Dictionary<String, JSON>
-    public typealias JSONArray = Array<JSON>
+    public typealias JSONDictionary = [String:JSONUtils.JSON]
+    public typealias JSONArray = Array<JSONUtils.JSON>
     
     
-    func JSONString(object: JSON?) -> String? {
+    func JSONString(object: JSONUtils.JSON?) -> String? {
         return object as? String
     }
     
-    func JSONInt(object: JSON?) -> Int? {
+    func JSONInt(object: JSONUtils.JSON?) -> Int? {
         return object as? Int
     }
     
-    func JSONObject(object: JSON?) -> JSONDictionary? {
+    func JSONObject(object: JSONUtils.JSON?) -> JSONDictionary? {
         return object as? JSONDictionary
     }
+    
+    
 }

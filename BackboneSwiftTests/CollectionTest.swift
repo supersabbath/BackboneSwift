@@ -40,10 +40,9 @@ class CollectionTest: XCTestCase {
    
     func testFecth() {
         
-            //NSBundle *testTargetBundle = [NSBundle bundleWithIdentifier:@"com.parsifal.Starz-Test"];
-      let bundle = NSBundle(identifier: "com.alphabit.BackboneSwiftTests")
+        let bundle = NSBundle(identifier: "com.alphabit.BackboneSwiftTests")
       
-      let jsonPath = bundle?.pathForResource("videos", ofType: "json")
+        let jsonPath = bundle?.pathForResource("videos", ofType: "json")
       
         let data = NSData(contentsOfFile: jsonPath!)
       
@@ -85,7 +84,7 @@ class CollectionTest: XCTestCase {
     
         
         
-        sutCollection.fetch(Options()).then {
+        sutCollection.fetch(HttpOptions()).then {
             x -> Void in
             XCTAssertTrue((sutCollection.pop()?.full_name!.containsString("google")) == true)
             
@@ -119,7 +118,7 @@ class CollectionTest: XCTestCase {
         
         sutCollection.url = "https://api.github.com/users/google/repos?page=1&per_page=7"
         
-        sutCollection.fetch(Options(), onSuccess: { (objs) -> Void in
+        sutCollection.fetch(HttpOptions(), onSuccess: { (objs) -> Void in
           
             XCTAssertTrue((sutCollection.pop()?.full_name!.containsString("google")) == true)
             
@@ -134,7 +133,7 @@ class CollectionTest: XCTestCase {
         })
         
         
-        sutCollection.fetch(Options()).then {
+        sutCollection.fetch(HttpOptions()).then {
             x -> Void in
             XCTAssertTrue((sutCollection.pop()?.full_name!.containsString("google")) == true)
             
