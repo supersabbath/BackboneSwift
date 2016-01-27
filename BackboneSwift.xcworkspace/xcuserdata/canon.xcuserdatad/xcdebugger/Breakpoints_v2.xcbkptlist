@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Bucket
+   type = "0"
+   version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "BackboneSwiftTests/CollectionTest.swift"
+            timestampString = "475434889.782933"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "84"
+            endingLineNumber = "84"
+            landmarkName = "testGithubAPI_Promisefy()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "BackboneSwiftTests/CollectionTest.swift"
+            timestampString = "475439858.149362"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "101"
+            endingLineNumber = "101"
+            landmarkName = "testGithubAPI_Promisefy()"
+            landmarkType = "5">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "BackboneSwiftTests.CollectionTest.testGithubAPI (BackboneSwiftTests.CollectionTest)() -&gt; ()"
+                  moduleName = "BackboneSwiftTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/canon/Projects/BackboneSwift/BackboneSwiftTests/CollectionTest.swift"
+                  timestampString = "475439956.130568"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "101"
+                  endingLineNumber = "101"
+                  offsetFromSymbolStart = "429">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "BackboneSwiftTests.CollectionTest.(testGithubAPI (BackboneSwiftTests.CollectionTest) -&gt; () -&gt; ()).(closure #3)"
+                  moduleName = "BackboneSwiftTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/canon/Projects/BackboneSwift/BackboneSwiftTests/CollectionTest.swift"
+                  timestampString = "475439956.13081"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "103"
+                  endingLineNumber = "103"
+                  offsetFromSymbolStart = "23">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "BackboneSwiftTests/CollectionTest.swift"
+            timestampString = "475439868.00204"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "104"
+            endingLineNumber = "104"
+            landmarkName = "CollectionTest"
+            landmarkType = "3">
+            <Locations>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "BackboneSwiftTests.CollectionTest.(testGithubAPI (BackboneSwiftTests.CollectionTest) -&gt; () -&gt; ()).(closure #3)"
+                  moduleName = "BackboneSwiftTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/canon/Projects/BackboneSwift/BackboneSwiftTests/CollectionTest.swift"
+                  timestampString = "475439956.131211"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105"
+                  offsetFromSymbolStart = "239">
+               </Location>
+               <Location
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "BackboneSwiftTests.CollectionTest.(testGithubAPI (BackboneSwiftTests.CollectionTest) -&gt; () -&gt; ()).(closure #3).(implicit closure #2)"
+                  moduleName = "BackboneSwiftTests"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/canon/Projects/BackboneSwift/BackboneSwiftTests/CollectionTest.swift"
+                  timestampString = "475439956.131391"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "105"
+                  endingLineNumber = "105"
+                  offsetFromSymbolStart = "36">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "BackboneSwiftTests/CollectionTest.swift"
+            timestampString = "475439958.496746"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "83"
+            endingLineNumber = "83"
+            landmarkName = "testGithubAPI_Promisefy()"
+            landmarkType = "5">
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
+</Bucket>

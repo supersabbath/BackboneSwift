@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import PromiseKit
+import SwiftyJSON
 
 class ViewController: UIViewController {
 
@@ -17,6 +19,16 @@ class ViewController: UIViewController {
 
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
+        
+        class CollectionSubClas: Collection<Model> {
+            
+//            override func parse(response: JSON) -> Promise<Array<Model>> {
+//                return Promise()
+//            }
+
+        }
+        
+        
         // Dispose of any resources that can be recreated.
     }
 

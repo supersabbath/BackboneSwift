@@ -9,11 +9,18 @@
 import XCTest
 @testable import BackboneSwift
 
+public class testClass : Model {
+    public var dd:String?
+    public var juancarlos:String?
+}
+
 class BackboneSwiftTests: XCTestCase {
+    
+    let model = testClass();
     
     override func setUp() {
         super.setUp()
-        // Put setup code here. This method is called before the invocation of each test method in the class.
+      
     }
     
     override func tearDown() {
@@ -21,15 +28,21 @@ class BackboneSwiftTests: XCTestCase {
         super.tearDown()
     }
     
-    func testExample() {
-        // This is an example of a functional test case.
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
+    func testParse() {
+        
+        model.parse(["dd":"hola", "juancarlos":"dadfasdf"])
+
+      
+        XCTAssertEqual(model.dd, "hola")
+        XCTAssertEqual(model.juancarlos, "dadfasdf")
+        
     }
     
     func testPerformanceExample() {
-        // This is an example of a performance test case.
-        self.measureBlock {
-            // Put the code you want to measure the time of here.
+      
+        self.measureBlock { [unowned self] in
+            
+            self.model.parse(["dd":"hola", "juancarlos":"nothing","hoasd":"adfasdf","h2":"adfasdf"])
         }
     }
     
