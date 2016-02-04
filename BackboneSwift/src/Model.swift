@@ -46,6 +46,11 @@ import SwiftyJSON
 import Alamofire
 import PromiseKit
 
+public protocol BackboneConcurrencyDelegate {
+
+    func concurrentOperationQueue() -> dispatch_queue_t
+
+}
 
 public protocol BackboneModel
 {
@@ -58,6 +63,7 @@ public protocol BackboneModel
     // Functions
     func parse(response: JSONUtils.JSONDictionary)
     func toJSON() -> String
+  
     init()
 }
 
@@ -80,7 +86,7 @@ public class Model: NSObject , BackboneModel {
         mirror.children.forEach({ [unowned self] (label, value) -> ()  in
             
             self.assignToClassVariable(label!, payload: response)
-            })
+        })
         
     }
     
@@ -96,9 +102,11 @@ public class Model: NSObject , BackboneModel {
     
     private func  assignToClassVariable (varName:String , payload :[String:AnyObject])
     {
+  
+        
         if let value = payload[varName] >>> unWrapString {
-            //  print("--->>> \(varName)")
-            //  print(value)
+           //   print("--->>> \(varName)")
+           //   print(value)
             self.setValue(value, forKey: varName)
         }
     }
@@ -113,13 +121,18 @@ public class Model: NSObject , BackboneModel {
      */
     func fetch(options:HttpOptions? , onSuccess: () ->Void , onError:(BackboneError)->Void){
         
-        guard let feedURL = url  else {
+        guard var feedURL = url  else {
             print("Models must have an URL, fetch cancelled")
             onError(.InvalidURL)
             return
         }
         
-        Alamofire.request(.GET, feedURL , parameters:options?.headers )
+        if let queryURL =  options?.processParametters(feedURL) {
+            feedURL = queryURL
+        }
+        
+        Alamofire.request(.GET, feedURL , parameters:options?.body )
+            .validate()
             .responseJSON { [unowned self] response in
                 
                 switch response.result {
@@ -147,7 +160,7 @@ public class Model: NSObject , BackboneModel {
  Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
  */
 
-func fetch(options:HttpOptions?=nil) -> Promise <Void>  {
+    public func fetch(options:HttpOptions?=nil) -> Promise <Void>  {
     
     return Promise { fulfill, reject in
         
@@ -162,3 +175,6 @@ func fetch(options:HttpOptions?=nil) -> Promise <Void>  {
     }
 }
 }
+
+
+

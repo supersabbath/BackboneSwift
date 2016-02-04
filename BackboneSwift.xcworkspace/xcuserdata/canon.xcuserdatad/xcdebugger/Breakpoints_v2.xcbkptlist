@@ -17,38 +17,6 @@
             endingLineNumber = "84"
             landmarkName = "testGithubAPI_Promisefy()"
             landmarkType = "5">
-            <Locations>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "BackboneSwiftTests.CollectionTest.testGithubAPI_Promisefy (BackboneSwiftTests.CollectionTest)() -&gt; ()"
-                  moduleName = "BackboneSwiftTests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/canon/Projects/BackboneSwift/BackboneSwiftTests/CollectionTest.swift"
-                  timestampString = "475594966.811151"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "87"
-                  endingLineNumber = "87"
-                  offsetFromSymbolStart = "299">
-               </Location>
-               <Location
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "BackboneSwiftTests.CollectionTest.(testGithubAPI_Promisefy (BackboneSwiftTests.CollectionTest) -&gt; () -&gt; ()).(closure #1)"
-                  moduleName = "BackboneSwiftTests"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/canon/Projects/BackboneSwift/BackboneSwiftTests/CollectionTest.swift"
-                  timestampString = "475594966.814094"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "89"
-                  endingLineNumber = "89"
-                  offsetFromSymbolStart = "23">
-               </Location>
-            </Locations>
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
