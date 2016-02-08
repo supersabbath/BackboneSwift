@@ -46,6 +46,15 @@ import SwiftyJSON
 import Alamofire
 import PromiseKit
 
+enum SerializationError: ErrorType {
+    // We only support structs
+    case StructRequired
+    // The entity does not exist in the Core Data Model
+    case UnknownEntity(name: String)
+    // The provided type cannot be stored in core data
+    case UnsupportedSubType(label: String?)
+}
+
 public protocol BackboneConcurrencyDelegate {
 
     func concurrentOperationQueue() -> dispatch_queue_t
@@ -54,6 +63,7 @@ public protocol BackboneConcurrencyDelegate {
 
 public protocol BackboneModel
 {
+ 
     // Variables
     /**
     Returns the relative URL where the model's resource would be located on the server. If your models are located somewhere else, override this method with the correct logic. Generates URLs of the form: "[collection.url]/[id]" by default, but you may override by specifying an explicit urlRoot if the model's collection shouldn't be taken into account.
@@ -75,21 +85,65 @@ public class Model: NSObject , BackboneModel {
         
     }
     
+    /**
+     Use subscripts for ascessing only String values
+    */
+    subscript(propertyName: String) -> AnyObject?{
+        
+        get {
+            
+            if self.respondsToSelector("propertyName"){
+            
+                return valueForKey(propertyName)
+            }else{
+                return nil
+            }
+        
+        }
+        set(newValue) {
+            
+            setValue(newValue, forKey: propertyName)
+        }
+      
+    }
     // Mark: 100% Backbone funcs
     /**
     parse is called whenever a model's data is returned by the server, in fetch, and save. The function is passed the raw response object, and should return the attributes hash to be set on the model. The default implementation is a no-op, simply passing through the JSON response. Override this if you need to work with a preexisting API, or better namespace your responses.
     */
     public func parse(response: JSONUtils.JSONDictionary) {
+
+
+            let mirror = Mirror(reflecting: self)
+                reflexion(response, mirror: mirror)
         
-        let mirror = Mirror(reflecting: self)
-        
-        mirror.children.forEach({ [unowned self] (label, value) -> ()  in
-            
-            self.assignToClassVariable(label!, payload: response)
-        })
-        
+            let superMirror = Mirror(reflecting: self).superclassMirror()
+            if let m = superMirror {
+                reflexion(response, mirror: m)
+            }
+    
     }
     
+    
+    internal func reflexion(response: JSONUtils.JSONDictionary , mirror:Mirror) {
+        
+        for case let (label?, value) in mirror.children {
+            
+             print (label, value)
+            
+            if let _ = response[label] as? String {
+                
+              self.assignToClassVariable(label, payload: response)
+                
+            }else if let _ = response[label] as? Int {
+                
+                self[label] = "\(response[label])"
+             
+            } else if let _ = response[label] as? [JSONUtils.JSONDictionary] {
+                
+                self[label] = response[label]
+            }
+        }
+    }
     /**
      Return a shallow copy of the model's attributes for JSON stringification. This can be used for persistence, serialization, or for augmentation before being sent to the server. The name of this method is a bit confusing, as it doesn't actually return a JSON string
      
@@ -102,12 +156,11 @@ public class Model: NSObject , BackboneModel {
     
     private func  assignToClassVariable (varName:String , payload :[String:AnyObject])
     {
-  
-        
         if let value = payload[varName] >>> unWrapString {
-           //   print("--->>> \(varName)")
-           //   print(value)
-            self.setValue(value, forKey: varName)
+            print("--->>> \(varName)")
+            
+            self[varName] = value
+           
         }
     }
     

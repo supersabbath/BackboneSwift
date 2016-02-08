@@ -17,3 +17,11 @@ public class BackboneParser: NSObject {
         return ""
     }
 }
+
+
+public protocol BackboneViewControllerProtocol {
+   
+    typealias ModelType
+    var model:ModelType? {get set}
+    func render(model:ModelType?);
+}
