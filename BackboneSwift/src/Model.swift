@@ -128,15 +128,15 @@ public class Model: NSObject , BackboneModel {
         
         for case let (label?, value) in mirror.children {
             
-             print (label, value)
+       
             
             if let _ = response[label] as? String {
                 
               self.assignToClassVariable(label, payload: response)
                 
-            }else if let _ = response[label] as? Int {
+            }else if let numericValue = response[label] as? Int {
                 
-                self[label] = "\(response[label])"
+                self[label] = "\(numericValue)"
              
             } else if let _ = response[label] as? [JSONUtils.JSONDictionary] {
                 
@@ -157,8 +157,8 @@ public class Model: NSObject , BackboneModel {
     private func  assignToClassVariable (varName:String , payload :[String:AnyObject])
     {
         if let value = payload[varName] >>> unWrapString {
-            print("--->>> \(varName)")
             
+            //print("--->>> \(varName)"
             self[varName] = value
            
         }
