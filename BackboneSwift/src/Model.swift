@@ -113,22 +113,31 @@ public class Model: NSObject , BackboneModel {
     public func parse(response: JSONUtils.JSONDictionary) {
 
 
-            let mirror = Mirror(reflecting: self)
-                reflexion(response, mirror: mirror)
+        let mirror = Mirror(reflecting: self)
+        reflexion(response, mirror: mirror)
+        reflectSuperChildren(response, superMirror: mirror.superclassMirror())
         
-            let superMirror = Mirror(reflecting: self).superclassMirror()
-            if let m = superMirror {
-                reflexion(response, mirror: m)
-            }
+//            let superMirror = Mirror(reflecting: self).superclassMirror()
+//            if let m = superMirror {
+//                reflexion(response, mirror: m)
+//            }
     
+    }
+    
+    internal func reflectSuperChildren(response: JSONUtils.JSONDictionary , superMirror:Mirror?)
+    {
+        if let m = superMirror {
+            reflexion(response, mirror: m)
+            reflectSuperChildren(response, superMirror: m.superclassMirror())
+            //print("R")
+        }
     }
     
     
     internal func reflexion(response: JSONUtils.JSONDictionary , mirror:Mirror) {
         
-        for case let (label?, value) in mirror.children {
-            
-       
+        for case let (label?, _) in mirror.children {
+        
             
             if let _ = response[label] as? String {
                 
