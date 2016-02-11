@@ -58,15 +58,15 @@ enum SerializationError: ErrorType {
 public protocol BackboneConcurrencyDelegate {
 
     func concurrentOperationQueue() -> dispatch_queue_t
-
 }
 
-//public protocol BackboneCacheDelegate {
-//    
-//    static let downloadCache:NSCache
-//}
 
-//typealias BackboneDelegate<BackboneCacheDelegate>
+public protocol BackboneCacheDelegate {
+    
+    func requestCache() -> NSCache
+}
+
+public typealias BackboneDelegate = protocol<BackboneCacheDelegate, BackboneConcurrencyDelegate>
 
 public protocol BackboneModel
 {

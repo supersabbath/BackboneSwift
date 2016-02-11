@@ -97,7 +97,7 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
     public var models = [GenericModel]()
     
     var url:String?
-    public var delegate:BackboneConcurrencyDelegate?
+    public var delegate:BackboneDelegate?
     
     public init( withUrl:String) {
         url = withUrl
@@ -115,6 +115,15 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
             onError(.InvalidURL)
             return
         }
+       
+        let json = getJSONFromCache(feedURL)
+        
+        guard json == nil else {
+            print("Collection From Cache")
+            self.parse(json!)
+            onSuccess(self.models)
+            return
+        }
         
         Alamofire.request(.GET, feedURL , parameters:nil )
             .validate()
@@ -127,7 +136,7 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
                     if let jsonValue = response.result.value {
                         
                         self.parse(jsonValue)
-                        
+                        self.addResponseToCache(jsonValue, cacheID: feedURL)
                         onSuccess(self.models)
                     }
                 case .Failure(let error):
@@ -260,6 +269,26 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
         }
     }
 
+    // MARK: Collections Cache
     
+    private func addResponseToCache(json :AnyObject, cacheID:String) {
+        
+        if let d = delegate {
+            d.requestCache().setObject(json, forKey: cacheID)
+        }
+    }
+    
+    
+    private func getJSONFromCache(cacheID:String) -> AnyObject? {
+    
+        if let d = delegate {
+            let json = d.requestCache().objectForKey(cacheID)
+            if let j = json {
+          
+                return j
+            }
+        }
+        return nil
+    }
 }
 
