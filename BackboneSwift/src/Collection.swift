@@ -148,8 +148,7 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
                 if let jsonValue = response.result.value {
                     
                     self.parse(jsonValue)
-                    
-                
+            
                 }
 
                 dispatch_async(dispatch_get_main_queue() , { () -> Void in

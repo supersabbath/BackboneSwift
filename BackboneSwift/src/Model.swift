@@ -61,6 +61,13 @@ public protocol BackboneConcurrencyDelegate {
 
 }
 
+//public protocol BackboneCacheDelegate {
+//    
+//    static let downloadCache:NSCache
+//}
+
+//typealias BackboneDelegate<BackboneCacheDelegate>
+
 public protocol BackboneModel
 {
  
