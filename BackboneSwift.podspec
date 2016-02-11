@@ -15,5 +15,6 @@ s.source_files = 'BackboneSwift/src/*.{swift}', 'BackboneSwift/src/utils/*.{swif
 s.frameworks = 'UIKit'
 s.dependency 'SwiftyJSON', '~> 2.3.2'
 s.dependency 'Alamofire', '~> 3.0'
+s.dependency 'PromiseKit', '~> 3.0.2'
 #, :path => '~/Projects/promiseKit/PromiseKit'
 end

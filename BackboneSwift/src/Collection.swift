@@ -116,27 +116,43 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
             return
         }
        
-        let json = getJSONFromCache(feedURL)
+        if let query = options?.query{
+            
+            let urlComponents = NSURLComponents(string: feedURL)
+           
+            urlComponents?.query = query
+            
+            performRequest(urlComponents!, method: "Get", onSuccess: onSuccess, onError: onError)
+        }
+        else{
+            performRequest(feedURL, method: "Get", onSuccess: onSuccess, onError: onError)
+        
+        }
+
+    }
+    
+    internal func performRequest(collectionURL:URLStringConvertible , method:String , parametters:[String: AnyObject]? = nil, onSuccess: (Array<GenericModel>)->Void , onError:(BackboneError)->Void ){
+        
+        let json = getJSONFromCache(collectionURL.URLString)
         
         guard json == nil else {
-            print("Collection From Cache")
             self.parse(json!)
             onSuccess(self.models)
             return
         }
-        
-        Alamofire.request(.GET, feedURL , parameters:nil )
+
+        Alamofire.request(.GET, collectionURL , parameters:nil )
             .validate()
             .responseJSON { response in
-             
-               // print(response.response) // URL response
-            
+                
+                // print(response.response) // URL response
+                
                 switch response.result {
                 case .Success:
                     if let jsonValue = response.result.value {
                         
                         self.parse(jsonValue)
-                        self.addResponseToCache(jsonValue, cacheID: feedURL)
+                        self.addResponseToCache(jsonValue, cacheID: collectionURL.URLString)
                         onSuccess(self.models)
                     }
                 case .Failure(let error):
@@ -144,9 +160,12 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
                     onError(.HttpError(description: error.description))
                 }
         }
+
+    
     }
     
-    func processResponse(response: Response<AnyObject,NSError> , onSuccess: (Array<GenericModel>)->Void , onError:(BackboneError)->Void ){
+    
+   internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (Array<GenericModel>)->Void , onError:(BackboneError)->Void ){
         print(response.response) // URL response
         
         if let d = self.delegate {
@@ -215,25 +234,21 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
         let json = JSON(response)
         
         if let array =  json.arrayObject {
-            
-            print("The collection response contained and Array: \(array)")
+            //    print("The collection response contained and Array: \(array)")
             populateModelsArray(array)
             
         } else if let dic = json.dictionaryObject {
             
-            print("The collection response contained and Dictionary. Backbone will parse the firs JsonDitionary")
-            
+            //  print("The collection response contained and Dictionary. Backbone will parse the firs JsonDitionary")
             for (_, value ) in dic {
-                
                 if let validArray = value as? [JSONUtils.JSONDictionary]{
                     populateModelsArray(validArray);
                     break
                 }
             }
-
         }
-    
     }
+    
     
     
     internal func populateModelsArray( unParsedArray:[AnyObject]) {
