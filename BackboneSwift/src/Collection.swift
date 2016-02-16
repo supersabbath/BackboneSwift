@@ -200,7 +200,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
                         self.addResponseToCache(jsonValue, cacheID: collectionURL.URLString)
                         
                         if let httpResponse = response.response {
-                            print(httpResponse)
+                         //   debugPrint(httpResponse)
                             let result = FetchResult(modelArray: self.models , httpResponse:httpResponse)
                             onSuccess(result)
                         }else{
@@ -222,7 +222,8 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
     
     
    internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void ){
-        print(response.response) // URL response
+    
+     //debugPrint(response.response) // URL response
         
         if let d = self.delegate {
             
