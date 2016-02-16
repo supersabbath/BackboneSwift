@@ -35,7 +35,7 @@ pop
 – url
 parse
 – clone
-– fetch
+fetch
 – create
 */
 
@@ -45,10 +45,12 @@ import Alamofire
 import PromiseKit
 
 public struct HttpOptions {
+   
     
+    public var useCache = true
+    public var headers:[String:String]?
     var query:String?
-    var headers:[String:String]?
-    var body:[String:String]?
+    var body:[String:AnyObject]?
     
     
     public init(){}
@@ -57,12 +59,12 @@ public struct HttpOptions {
         headers = httpHeader
     }
     
-    public init(postBody:[String:String]){
+    public init(postBody:[String:AnyObject]){
         body = postBody
     }
     public init(queryString:String){
-        query = "?"
-        query!.appendContentsOf(queryString)
+    
+        query = queryString
     }
     
     subscript(queryValues:String) -> String {
@@ -70,18 +72,22 @@ public struct HttpOptions {
             return query ?? ""
         }
         set {
-            query = "?" + queryValues
+            query = queryValues
         }
     }
     
-    func processParametters(url:String)->String {
+    
+    
+    func stringifyBody()->String? {
+       
+        guard let requestBody = body else { return nil}
         
-        if let newUrl = query {
-            return url + newUrl
-        }else{
-            return url
-        }
+       let stringify = JSONUtils().JSONStringifyCommand(requestBody);
+        
+        return stringify
     }
+    
+    
 }
 
 
@@ -89,10 +95,47 @@ public enum BackboneError: ErrorType {
     case InvalidURL
     case HttpError(description:String)
     case ParsingError
+    case InvalidHTTPMethod
+    case FailedPOST
 }
 
 
-public class Collection <GenericModel: BackboneModel> :NSObject {
+public struct FetchResult <T: BackboneModel>  {
+    
+    public let models:[T]
+    public var response: NSHTTPURLResponse?
+    public var isCacheResult = false
+    
+    init( modelArray:[T]){
+        models = modelArray
+    }
+    
+    init( modelArray:[T] , fromCache:Bool){
+        models = modelArray
+        isCacheResult = fromCache
+    }
+    
+    init( modelArray:[T] , httpResponse:NSHTTPURLResponse){
+        models = modelArray
+        response = httpResponse
+    }
+}
+
+
+public enum RESTMethod {
+    case  GET,POST,PUT,DELETE
+}
+
+public class BackboneBase: NSObject {
+    
+
+    
+    public func sync (method:RESTMethod, model: Model , option:(callback:()->AnyObject,errorCallback:(ErrorType) ->Void ) ){}
+}
+
+
+
+public class Collection <GenericModel: BackboneModel>  :NSObject {
     
     public var models = [GenericModel]()
     
@@ -103,17 +146,18 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
         url = withUrl
     }
     
+   
     // MARK: - PUBLIC BACKBONE METHODS 🅿️
     
     /**
     Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
     */
-    public func fetch(options:HttpOptions?=nil, onSuccess: (Array<GenericModel>)->Void , onError:(BackboneError)->Void){
+    public func fetch(options:HttpOptions?=nil, onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void){
         
         guard let feedURL = url  else {
             print("Collections must have an URL, fetch cancelled")
             onError(.InvalidURL)
-            return
+            return 
         }
        
         if let query = options?.query{
@@ -122,30 +166,31 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
            
             urlComponents?.query = query
             
-            performRequest(urlComponents!, method: "Get", onSuccess: onSuccess, onError: onError)
+            synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
         }
         else{
-            performRequest(feedURL, method: "Get", onSuccess: onSuccess, onError: onError)
+            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
         
         }
 
     }
     
-    internal func performRequest(collectionURL:URLStringConvertible , method:String , parametters:[String: AnyObject]? = nil, onSuccess: (Array<GenericModel>)->Void , onError:(BackboneError)->Void ){
+    internal func synch(collectionURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void ){
         
-        let json = getJSONFromCache(collectionURL.URLString)
-        
+        let json =  getJSONFromCache(collectionURL.URLString)
+      
         guard json == nil else {
             self.parse(json!)
-            onSuccess(self.models)
+            let result = FetchResult(modelArray: self.models, fromCache: true)
+            onSuccess(result)
             return
         }
 
-        Alamofire.request(.GET, collectionURL , parameters:nil )
+        Alamofire.request(Alamofire.Method(rawValue: method)!, collectionURL , parameters:nil )
             .validate()
             .responseJSON { response in
                 
-                // print(response.response) // URL response
+               
                 
                 switch response.result {
                 case .Success:
@@ -153,7 +198,18 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
                         
                         self.parse(jsonValue)
                         self.addResponseToCache(jsonValue, cacheID: collectionURL.URLString)
-                        onSuccess(self.models)
+                        
+                        if let httpResponse = response.response {
+                            print(httpResponse)
+                            let result = FetchResult(modelArray: self.models , httpResponse:httpResponse)
+                            onSuccess(result)
+                        }else{
+                            let result = FetchResult(modelArray: self.models )
+                            onSuccess(result)
+                        }
+                        
+                      
+                        
                     }
                 case .Failure(let error):
                     print(error)
@@ -165,7 +221,7 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
     }
     
     
-   internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (Array<GenericModel>)->Void , onError:(BackboneError)->Void ){
+   internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void ){
         print(response.response) // URL response
         
         if let d = self.delegate {
@@ -180,7 +236,10 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
                 }
 
                 dispatch_async(dispatch_get_main_queue() , { () -> Void in
-                        onSuccess(self.models)
+                    
+                    let result = FetchResult(modelArray: self.models )
+                    onSuccess(result)
+                    
                 })
                 
             })
@@ -196,8 +255,8 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
                 if let jsonValue = response.result.value {
                     
                     self.parse(jsonValue)
-                    
-                    onSuccess(self.models)
+                    let result = FetchResult(modelArray: self.models )
+                    onSuccess(result)
                 }
             case .Failure(let error):
                 print(error)
@@ -210,7 +269,7 @@ public class Collection <GenericModel: BackboneModel> :NSObject {
     /**
      Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
      */
-   public func fetch(options:HttpOptions?=nil) -> Promise <Array<GenericModel> >  {
+   public func fetch(options:HttpOptions?=nil) -> Promise <FetchResult<GenericModel> >  {
         
         return Promise { fulfill, reject in
             

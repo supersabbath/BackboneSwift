@@ -29,7 +29,7 @@ public struct JSONUtils {
     
     
     
-    func JSONStringifyCommand( messageDictionary : Dictionary <String, AnyObject>) -> String?
+   public func JSONStringifyCommand( messageDictionary : Dictionary <String, AnyObject>) -> String?
     {
         let options = NSJSONWritingOptions(rawValue: 0)
         

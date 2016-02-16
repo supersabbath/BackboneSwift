@@ -21,12 +21,12 @@
 – attributes
 – changed
 – defaults
-– sync
-– fetch
-– save
+sync
+fetch
+save
 – destroy
 – Underscore Methods (9)
-– validate
+validate
 – validationError
 – isValid
 url
@@ -55,6 +55,8 @@ enum SerializationError: ErrorType {
     case UnsupportedSubType(label: String?)
 }
 
+ 
+
 public protocol BackboneConcurrencyDelegate {
 
     func concurrentOperationQueue() -> dispatch_queue_t
@@ -80,8 +82,10 @@ public protocol BackboneModel
     // Functions
     func parse(response: JSONUtils.JSONDictionary)
     func toJSON() -> String
-  
+    func validate(attributes:[String]?) -> Bool
+   
     init()
+    
 }
 
 public class Model: NSObject , BackboneModel {
@@ -119,17 +123,12 @@ public class Model: NSObject , BackboneModel {
     */
     public func parse(response: JSONUtils.JSONDictionary) {
 
-
         let mirror = Mirror(reflecting: self)
         reflexion(response, mirror: mirror)
         reflectSuperChildren(response, superMirror: mirror.superclassMirror())
-        
-//            let superMirror = Mirror(reflecting: self).superclassMirror()
-//            if let m = superMirror {
-//                reflexion(response, mirror: m)
-//            }
     
     }
+    
     
     internal func reflectSuperChildren(response: JSONUtils.JSONDictionary , superMirror:Mirror?)
     {
@@ -188,40 +187,28 @@ public class Model: NSObject , BackboneModel {
     /**
      Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
      */
-    func fetch(options:HttpOptions? , onSuccess: () ->Void , onError:(BackboneError)->Void){
+    func fetch(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void){
         
-        guard var feedURL = url  else {
-            print("Models must have an URL, fetch cancelled")
+        guard let feedURL = url  else {
+            print("Collections must have an URL, fetch cancelled")
             onError(.InvalidURL)
             return
         }
         
-        if let queryURL =  options?.processParametters(feedURL) {
-            feedURL = queryURL
+        if let query = options?.query{
+            
+            let urlComponents = NSURLComponents(string: feedURL)
+            
+            urlComponents?.query = query
+            
+            synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
         }
-        
-        Alamofire.request(.GET, feedURL , parameters:options?.body )
-            .validate()
-            .responseJSON { [unowned self] response in
-                
-                switch response.result {
-                case .Success:
-                    
-                    if let jsonValue = response.result.value {
-                        if let dic = jsonValue as? JSONUtils.JSONDictionary {
-                            self.parse(dic)
-                            onSuccess()
-                            return
-                        }
-                    }
-                onError(.ParsingError)
-                
-                case .Failure(let error):
-                print(error)
-                onError(.HttpError(description: error.description))
+        else{
+            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
+            
         }
+
     }
-}
 
 
 
@@ -229,20 +216,141 @@ public class Model: NSObject , BackboneModel {
  Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
  */
 
-    public func fetch(options:HttpOptions?=nil) -> Promise <Void>  {
-    
-    return Promise { fulfill, reject in
+    public func fetch(options:HttpOptions?=nil) -> Promise <FetchResult<Model>>  {
         
-        fetch(options, onSuccess: { () -> Void in
+        return Promise { fulfill, reject in
             
-            fulfill()
-            
-            }, onError: { (error) -> Void in
+            fetch(options, onSuccess: { (result) -> Void in
                 
+                fulfill(result)
+                
+                }, onError: { (error) -> Void in
+                    
                 reject(error)
-        })
+            })
+        }
     }
+    
+    
+    internal func synch(modelURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (FetchResult<Model>)->Void , onError:(BackboneError)->Void ){
+        
+        guard let m = Alamofire.Method(rawValue: method ) else { onError(BackboneError.InvalidHTTPMethod); return }
+//        var param:[String:String]?
+//        if let optsBody = options?.stringifyBody() {
+//        
+//          param = ["":optsBody]
+//        }else {
+//        
+//            param = nil
+//        }
+     
+
+        Alamofire.request(m, modelURL ,parameters:options?.body,  encoding: .JSON,headers:options?.headers)
+            .validate()
+            .responseJSON { [weak self] response in
+                
+                switch response.result {
+                case .Success:
+                      print("Save response \(response)")
+                    if let jsonValue = response.result.value {
+                        
+                        if let dic = jsonValue as? JSONUtils.JSONDictionary {
+                            
+                            if let ws = self {
+                                
+                                ws.parse(dic)
+                                
+                                if let httpResponse = response.response {
+                                    
+                                    let result = FetchResult(modelArray: [ws] , httpResponse:httpResponse)
+                                    onSuccess(result)
+                                    return
+                                }else{
+                                    let result = FetchResult(modelArray:[ws] )
+                                    onSuccess(result)
+                                    return
+                                }
+                                
+                                
+                            }
+
+                        }
+                        onError(.HttpError(description: "Faild procesing model request"))
+                        return
+                    }
+                    onError(.ParsingError)
+                    
+                case .Failure(let error):
+                    print("\(error)")
+                    onError(.HttpError(description: error.description))
+                }
+        }
+
+        
+        
+    }
+    /**
+     This method is left undefined and you're encouraged to override it with any custom validation logic you have that can be performed in Swift. By default save checks validate before setting any attributes but you may also tell set to validate the new attributes by passing {validate: true} as an option.
+     The validate method receives the model attributes as well as any options passed to set or save. If the attributes are valid, don't return anything from validate; if they are invalid return an error of your choosing. It can be as simple as a string error message to be displayed, or a complete error object that describes the error programmatically. If validate returns an error, save will not continue, and the model attributes will not be modified on the server. Failed validations trigger an "invalid" event, and set the validationError property on the model with the value returned by this method.
+     */
+    public func validate(attributes:[String]?) -> Bool{
+// TODO:  improve this. We will have to add atttributes array .
+        return true
+    }
+    
+    
+   
+
 }
+
+// MARK:  POST
+extension Model {
+    
+    /**
+     
+        Save a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP POST),
+      //TODO: if the model already exists on the server, the save will be an "update" (HTTP PUT).
+     
+     */
+    
+    public func save(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void){
+        // TODO:  improve this. We will have to add the attributes array
+        // TODO : check if the attribute is new to do an put or a create
+        guard validate(nil) else { onError(.FailedPOST); return}
+        
+        guard let feedURL = url  else {
+            print("Models must have an URL, fetch cancelled")
+            onError(.InvalidURL)
+            return
+        }
+          print("Save") // URL response
+        synch(feedURL, method: "POST", options: options,onSuccess: onSuccess, onError: onError)
+        
+    }
+    /**
+     Promisefy version of Save
+     @see save()
+     
+     */
+    
+    public func save(options:HttpOptions?=nil) -> Promise <FetchResult<Model>>  {
+        
+        return Promise { fulfill, reject in
+            
+            save(options, onSuccess: { (result) -> Void in
+               
+                    fulfill(result)
+                
+                }, onError: { (error) -> Void in
+                    reject (error )
+            })
+            
+        }
+        
+    }
+    
+
+
 }
 
 
