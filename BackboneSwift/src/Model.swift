@@ -156,7 +156,11 @@ public class Model: NSObject , BackboneModel {
             } else if let _ = response[label] as? [JSONUtils.JSONDictionary] {
                 
                 self[label] = response[label]
+            
+            } else if let _ = response[label] as? [String:String] {
+                 self[label] = response[label]
             }
+            
         }
     }
     /**
@@ -205,7 +209,7 @@ public class Model: NSObject , BackboneModel {
         }
         else{
             synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-            
+         
         }
 
     }
