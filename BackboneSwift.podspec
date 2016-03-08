@@ -9,9 +9,11 @@ s.author = {
 }
 s.homepage  = 'https://github.com/supersabbath/BackboneSwift'
 s.source = {
-:git => "https://github.com/supersabbath/BackboneSwift.git" , :tag => '1.0.0'
+:git => "https://github.com/supersabbath/BackboneSwift.git"
 }
 s.source_files = 'BackboneSwift/src/*.{swift}', 'BackboneSwift/src/utils/*.{swift}'
+s.platform = :tvos, "9.0"
+s.tvos.deployment_target = '9.0'
 s.frameworks = 'UIKit'
 s.dependency 'SwiftyJSON', '~> 2.3.2'
 s.dependency 'Alamofire', '~> 3.0'
