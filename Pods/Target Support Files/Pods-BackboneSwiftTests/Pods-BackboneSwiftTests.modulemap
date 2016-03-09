@@ -1,6 +1,0 @@
-framework module Pods_BackboneSwiftTests {
-  umbrella header "Pods-BackboneSwiftTests-umbrella.h"
-
-  export *
-  module * { export * }
-}
