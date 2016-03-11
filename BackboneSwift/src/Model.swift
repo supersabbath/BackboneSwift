@@ -250,9 +250,8 @@ public class Model: NSObject , BackboneModel {
      
 
         Alamofire.request(m, modelURL ,parameters:options?.body,  encoding: .JSON,headers:options?.headers)
-            .validate()
+            .validate(statusCode:200..<500)
             .responseJSON { [weak self] response in
-                
                 switch response.result {
                 case .Success:
                       print("Save response \(response)")
@@ -261,25 +260,35 @@ public class Model: NSObject , BackboneModel {
                         if let dic = jsonValue as? JSONUtils.JSONDictionary {
                             
                             if let ws = self {
-                                
-                                ws.parse(dic)
-                                
-                                if let httpResponse = response.response {
-                                    
-                                    let result = FetchResult(modelArray: [ws] , httpResponse:httpResponse)
-                                    onSuccess(result)
+                                let statusCode = (response.response?.statusCode)!
+                                switch statusCode {
+                                case 200..<299:
+                                    ws.parse(dic)
+                                        
+                                    if let httpResponse = response.response {
+                                            
+                                        let result = FetchResult(modelArray: [ws] , httpResponse:httpResponse)
+                                        onSuccess(result)
+                                        return
+                                    }else{
+                                        let result = FetchResult(modelArray:[ws] )
+                                        onSuccess(result)
+                                        return
+                                    }
+                                case 300..<399:
+                                    onError(.HttpError(description: response.result.error!.description))
                                     return
-                                }else{
-                                    let result = FetchResult(modelArray:[ws] )
-                                    onSuccess(result)
+                                case 400..<499:
+                                    onError(.ErrorWithJSON(parameters:dic))
                                     return
+                                default:
+                                    break
                                 }
                                 
                                 
                             }
-
                         }
-                        onError(.HttpError(description: "Faild procesing model request"))
+                        onError(.HttpError(description: "Failed procesing model request"))
                         return
                     }
                     onError(.ParsingError)

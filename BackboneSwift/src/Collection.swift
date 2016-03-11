@@ -94,6 +94,7 @@ public struct HttpOptions {
 public enum BackboneError: ErrorType {
     case InvalidURL
     case HttpError(description:String)
+    case ErrorWithJSON(parameters:JSONUtils.JSONDictionary)
     case ParsingError
     case InvalidHTTPMethod
     case FailedPOST
