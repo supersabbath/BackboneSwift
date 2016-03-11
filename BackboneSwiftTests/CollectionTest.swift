@@ -13,7 +13,7 @@ import PromiseKit
 class CollectionTest: XCTestCase {
     
     
-    var collection = Collection<Model>()
+    var collection = Collection<Model>(withUrl: "")
     
     override func setUp() {
         super.setUp()
@@ -54,7 +54,7 @@ class CollectionTest: XCTestCase {
          public var uri : String?
         }
         
-        let sutCollection = Collection<Video>()
+        let sutCollection = Collection<Video>(withUrl: "")
         
         sutCollection.parse(anyObject!)
         
@@ -78,7 +78,7 @@ class CollectionTest: XCTestCase {
             
         }
         
-        let sutCollection = Collection <Project>()
+        let sutCollection = Collection <Project>(withUrl: "")
         
         sutCollection.url = "https://api.github.com/users/google/repos?page=1&per_page=7"
     
@@ -114,7 +114,7 @@ class CollectionTest: XCTestCase {
             
         }
         
-        let sutCollection = Collection <Project>()
+        let sutCollection = Collection <Project>(withUrl: "")
         
         sutCollection.url = "https://api.github.com/users/google/repos?page=1&per_page=7"
         

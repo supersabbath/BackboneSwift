@@ -1,5 +1,6 @@
 source 'https://github.com/CocoaPods/Specs.git'
-platform :ios, '8.1'
+
+platform :tvos, '9.0'
 use_frameworks!
 
 def libraries
