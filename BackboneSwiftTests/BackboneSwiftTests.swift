@@ -21,9 +21,10 @@ class BackboneSwiftTests: XCTestCase {
     
     let model = testClass();
     
+    
     override func setUp() {
         super.setUp()
-      
+        model.url = "www.google.com"
     }
     
     override func tearDown() {
@@ -88,5 +89,53 @@ class BackboneSwiftTests: XCTestCase {
         });
     
         
+    }
+    
+    func testSynchReturnsErrorWithJSONIfResponseReturnsJSON() {
+        
+        //url that returns error and JSON
+        let url = "http://link.theplatform.eu/s"
+        model.url = url
+        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+            XCTFail()
+        }) { (error) -> Void in
+            switch error {
+                case .ErrorWithJSON(let parameters):
+                    XCTAssertTrue(parameters.count > 0)
+                    asyncExpectation.fulfill()
+                    break
+                default:
+                    XCTFail()
+            }
+        }
+        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+            
+            print("time out")
+        });
+
+    }
+    
+    func testSynchReturnsHTTPErrorIfResponseNotReturningJSON() {
+        let url = "http://www.google.e"
+        model.url = url
+        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+            XCTFail()
+            }) { (error) -> Void in
+                switch error {
+                case .HttpError:
+                    XCTAssertNotNil(error)
+                    asyncExpectation.fulfill()
+                    break
+                default:
+                    XCTFail()
+                }
+        }
+        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+            
+            print("time out")
+        });
+
     }
 }
