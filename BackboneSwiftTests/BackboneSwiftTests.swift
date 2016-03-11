@@ -138,4 +138,63 @@ class BackboneSwiftTests: XCTestCase {
         });
 
     }
+    
+    func testSyncShouldReturnHTTPErrorFor3xx () {
+    
+        let url = "http://httpstat.us/304"
+        model.url = url
+        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+            XCTFail()
+            }) { (error) -> Void in
+                switch error {
+                case .HttpError(let description):
+                    XCTAssertNotNil(error)
+                    XCTAssertEqual( description, "304")
+                    asyncExpectation.fulfill()
+                    break
+                default:
+                    XCTFail()
+                }
+        }
+        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+            
+            print("time out")
+        });
+
+        
+    }
+    
+    
+    
+    func testSyncShouldReturnHTTPErrorFor5xx () {
+        
+        
+        
+        let url = "http://httpstat.us/500"
+        model.url = url
+        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+            XCTFail()
+            }) { (error) -> Void in
+                switch error {
+                case .HttpError(let description):
+                    XCTAssertNotNil(error)
+                    XCTAssertEqual( description, "500")
+                    asyncExpectation.fulfill()
+                    break
+                default:
+                    XCTFail()
+                }
+        }
+        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+            
+            print("time out")
+        });
+        
+        
+    }
+
+    
+    
 }
