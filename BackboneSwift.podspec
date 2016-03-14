@@ -5,9 +5,8 @@ s.summary      = 'BackboneSwift'
 s.requires_arc = true
 s.platform = :tvos, "9.0"
 s.tvos.deployment_target = '9.0'
-s.platform = :ios, "8.1"
-s.tvos.deployment_target = '9.2'
-s.ios.deployment_target = '9.0'
+s.platform = :ios, "8.1" 
+s.ios.deployment_target = '8.1'
 s.license = { :type => 'MIT', :text => '@see README' }
 s.author = {
 'Fernando Canon' => 'fernando.canon@starzplayarabia.com'
