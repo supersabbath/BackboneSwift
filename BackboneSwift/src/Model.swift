@@ -144,7 +144,6 @@ public class Model: NSObject , BackboneModel {
         
         for case let (label?, _) in mirror.children {
             
-            
             if let _ = response[label] as? String {
                 
                 self.assignToClassVariable(label, payload: response)
