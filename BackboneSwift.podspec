@@ -1,11 +1,11 @@
 Pod::Spec.new do |s|
 s.name         = 'BackboneSwift'
-s.version      = '0.0.3'
+s.version      = '0.0.4'
 s.summary      = 'BackboneSwift'
 s.requires_arc = true
-s.platform = :tvos, "9.0"
+s.platform = :ios, :tvos  
 s.tvos.deployment_target = '9.0'
-s.platform = :ios, "8.1" 
+
 s.ios.deployment_target = '8.1'
 s.license = { :type => 'MIT', :text => '@see README' }
 s.author = {
