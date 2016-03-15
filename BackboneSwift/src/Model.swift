@@ -88,6 +88,11 @@ public protocol BackboneModel
     
 }
 
+
+extension BackboneModel {
+
+
+}
 public class Model: NSObject , BackboneModel {
     
     public var url:String?
