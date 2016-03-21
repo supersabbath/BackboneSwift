@@ -187,7 +187,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
             return
         }
 
-        Alamofire.request(Alamofire.Method(rawValue: method)!, collectionURL , parameters:nil )
+        Alamofire.request(Alamofire.Method(rawValue: method)!, collectionURL , headers:options?.headers )
             .validate()
             .responseJSON { response in
                 
