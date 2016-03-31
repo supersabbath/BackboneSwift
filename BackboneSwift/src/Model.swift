@@ -24,7 +24,7 @@
 sync
 fetch
 save
-– destroy
+destroy
 – Underscore Methods (9)
 validate
 – validationError
@@ -58,41 +58,36 @@ enum SerializationError: ErrorType {
 
 
 public protocol BackboneConcurrencyDelegate {
-    
     func concurrentOperationQueue() -> dispatch_queue_t
 }
 
 
 public protocol BackboneCacheDelegate {
-    
     func requestCache() -> NSCache
 }
 
 public typealias BackboneDelegate = protocol<BackboneCacheDelegate, BackboneConcurrencyDelegate>
 
+
 public protocol BackboneModel
 {
-    
-    // Variables
+
     /**
-    Returns the relative URL where the model's resource would be located on the server. If your models are located somewhere else, override this method with the correct logic. Generates URLs of the form: "[collection.url]/[id]" by default, but you may override by specifying an explicit urlRoot if the model's collection shouldn't be taken into account.
+      - *url*  the relative URL where the model's resource would be located on the server. If your models are located somewhere else, override this method with the correct logic. Generates URLs of the form: "[collection.url]/[id]" by default, but you may override by specifying an explicit urlRoot if the model's collection shouldn't be taken into account.
     */
-    
     var url:String?{ get set }
     // Functions
+    /**
+        parse() handles the plain Swift JSON object parsing.
+     */
     func parse(response: JSONUtils.JSONDictionary)
     func toJSON() -> String
     func validate(attributes:[String]?) -> Bool
     
     init()
-    
 }
 
 
-extension BackboneModel {
-
-
-}
 public class Model: NSObject , BackboneModel {
     
     public var url:String?
@@ -192,53 +187,7 @@ public class Model: NSObject , BackboneModel {
     }
     
     
-    /**
-     Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
-     */
-    func fetch(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void){
-        
-        guard let feedURL = url  else {
-            print("Collections must have an URL, fetch cancelled")
-            onError(.InvalidURL)
-            return
-        }
-        
-        if let query = options?.query{
-            
-            let urlComponents = NSURLComponents(string: feedURL)
-            
-            urlComponents?.query = query
-            
-            synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-        }
-        else{
-            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-            
-        }
-        
-    }
-    
-    
-    
-    /**
-     Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
-     */
-    
-    public func fetch(options:HttpOptions?=nil) -> Promise <FetchResult<Model>>  {
-        
-        return Promise { fulfill, reject in
-            
-            fetch(options, onSuccess: { (result) -> Void in
-                
-                fulfill(result)
-                
-                }, onError: { (error) -> Void in
-                    
-                    reject(error)
-            })
-        }
-    }
-    
+
     
     internal func synch(modelURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (FetchResult<Model>)->Void , onError:(BackboneError)->Void ){
         
@@ -293,39 +242,102 @@ public class Model: NSObject , BackboneModel {
                 }
             }.response { [weak self] request, response, data, error in
                 
-                
+
                 if let _ = self {
-                    let statusCode = (response?.statusCode)!
-     
-                  
+                    
+                    var statusCode = 0
+                   
+                    if let _ = response {
+                     statusCode = response!.statusCode
+                    }
+                    
                     onError(.HttpError(description: "\(statusCode)"))
-                    
-                    
+            
                 }
-                
-                
         }
     }
     /**
      This method is left undefined and you're encouraged to override it with any custom validation logic you have that can be performed in Swift. By default save checks validate before setting any attributes but you may also tell set to validate the new attributes by passing {validate: true} as an option.
      The validate method receives the model attributes as well as any options passed to set or save. If the attributes are valid, don't return anything from validate; if they are invalid return an error of your choosing. It can be as simple as a string error message to be displayed, or a complete error object that describes the error programmatically. If validate returns an error, save will not continue, and the model attributes will not be modified on the server. Failed validations trigger an "invalid" event, and set the validationError property on the model with the value returned by this method.
      */
-    public func validate(attributes:[String]?) -> Bool{
+    public func validate(attributes:[String]?=nil) -> Bool{
         // TODO:  improve this. We will have to add atttributes array .
         return true
     }
     
+}
+// MARK:
+// MARK: GET
+protocol Fetchable {
+
+    func fetch(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void);
+    func fetch(options:HttpOptions?) -> Promise <FetchResult<Model>>
+}
+
+extension Model:Fetchable{
+
+
+    /**
+     Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
+     */
+    func fetch(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void){
+        
+        guard let feedURL = url  else {
+            print("Collections must have an URL, fetch cancelled")
+            onError(.InvalidURL)
+            return
+        }
+        
+        if let query = options?.query{
+            
+            let urlComponents = NSURLComponents(string: feedURL)
+            
+            urlComponents?.query = query
+            
+            synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
+        }
+        else{
+            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
+            
+        }
+        
+    }
     
     
+    
+    /**
+     Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
+     */
+    
+    public func fetch(options:HttpOptions?=nil) -> Promise <FetchResult<Model>>  {
+        
+        return Promise { fulfill, reject in
+            
+            fetch(options, onSuccess: { (result) -> Void in
+                
+                fulfill(result)
+                
+                }, onError: { (error) -> Void in
+                    
+                    reject(error)
+            })
+        }
+    }
+}
+
+// MARK:
+// MARK:  POST
+protocol Saveable {
+
+    func save(options:HttpOptions?) -> Promise <FetchResult<Model>>
+    func save(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void);
     
 }
 
-// MARK:  POST
-extension Model {
+extension Model:Saveable {
     
     /**
-     
-     Save a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP POST),
+     Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP POST),
      //TODO: if the model already exists on the server, the save will be an "update" (HTTP PUT).
      
      */
@@ -333,7 +345,7 @@ extension Model {
     public func save(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void){
         // TODO:  improve this. We will have to add the attributes array
         // TODO : check if the attribute is new to do an put or a create
-        guard validate(nil) else { onError(.FailedPOST); return}
+        guard validate() else { onError(.FailedPOST); return}
         
         guard let feedURL = url  else {
             print("Models must have an URL, fetch cancelled")
@@ -344,9 +356,10 @@ extension Model {
         synch(feedURL, method: "POST", options: options,onSuccess: onSuccess, onError: onError)
         
     }
+    
     /**
      Promisefy version of Save
-     @see save()
+     - seeAlso save()
      
      */
     
@@ -370,5 +383,41 @@ extension Model {
     
 }
 
+// MARK: -
+// MARK:  DELETE
+protocol Deletable {
+    
+    func delete(options:HttpOptions?) -> Promise < FetchResult<Model>>
+    func delete(options:HttpOptions? , onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void);
+    
+}
 
 
+extension Model: Deletable {
+
+    func delete(options:HttpOptions?=nil) -> Promise <FetchResult<Model>> {
+        
+        return Promise{ (fulfill, reject ) in
+           
+            delete(options, onSuccess: { (result) -> Void in
+                
+                    fulfill(result)
+                
+                }, onError: { (error) in
+                   reject(error)
+            })
+        }
+    }
+    
+    
+    func delete(options:HttpOptions? = nil, onSuccess: (FetchResult<Model>) ->Void , onError:(BackboneError)->Void) {
+       
+        guard let feedURL = url  else {
+            print("Models must have an URL, DELETE cancelled")
+            onError(.InvalidURL)
+            return
+        }
+        
+        synch(feedURL, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
+    }
+}

@@ -10,18 +10,9 @@ import UIKit
 import SwiftyJSON
 
 
-public class BackboneParser: NSObject {
-
-    func parse() -> AnyObject {
-    
-        return ""
-    }
-}
-
-
-public protocol BackboneViewControllerProtocol {
+public protocol ViewControllerBack {
    
-    typealias ModelType
+    associatedtype ModelType
     var model:ModelType? {get set}
     func render(model:ModelType?);
 }

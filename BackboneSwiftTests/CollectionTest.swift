@@ -63,7 +63,8 @@ class CollectionTest: XCTestCase {
         XCTAssertEqual(sutCollection.pop()?.contentType , "video")
         
     }
-    
+   
+
     
     func testGithubAPI_Promisefy (){
         

@@ -100,10 +100,17 @@ public enum BackboneError: ErrorType {
     case FailedPOST
 }
 
-
-public struct FetchResult <T: BackboneModel>  {
+public protocol  FetchResultContainer  {
     
-    public let models:[T]
+    associatedtype PosibleModel
+    var models:[PosibleModel] { get }
+    var response: NSHTTPURLResponse? { get set }
+    var isCacheResult:Bool { get set }
+}
+
+public struct FetchResult <T: BackboneModel>  : FetchResultContainer{
+    
+    public var models:[T]
     public var response: NSHTTPURLResponse?
     public var isCacheResult = false
     
@@ -127,12 +134,6 @@ public enum RESTMethod {
     case  GET,POST,PUT,DELETE
 }
 
-public class BackboneBase: NSObject {
-    
-
-    
-    public func sync (method:RESTMethod, model: Model , option:(callback:()->AnyObject,errorCallback:(ErrorType) ->Void ) ){}
-}
 
 
 
@@ -168,10 +169,10 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
             urlComponents?.query = query
             
             synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-        }
-        else{
-            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
         
+        }else{
+            
+            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
         }
 
     }
@@ -208,9 +209,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
                             let result = FetchResult(modelArray: self.models )
                             onSuccess(result)
                         }
-                        
-                      
-                        
+        
                     }
                 case .Failure(let error):
                     print(error)

@@ -8,18 +8,21 @@
 
 import XCTest
 import SwiftyJSON
+import PromiseKit
 
 @testable import BackboneSwift
 
-public class testClass : Model {
+public class TestClass : Model {
     public var dd:String?
     public var juancarlos:String?
     
 }
 
+
+
 class BackboneSwiftTests: XCTestCase {
     
-    let model = testClass();
+    let model = TestClass();
     
     
     override func setUp() {
@@ -97,6 +100,8 @@ class BackboneSwiftTests: XCTestCase {
         let url = "http://link.theplatform.eu/s"
         model.url = url
         let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+      
+        
         model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
         }) { (error) -> Void in
@@ -117,7 +122,7 @@ class BackboneSwiftTests: XCTestCase {
     }
     
     func testSynchReturnsHTTPErrorIfResponseNotReturningJSON() {
-        let url = "http://www.google.e"
+        let url = "http://www.google.es"
         model.url = url
         let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
         model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
@@ -169,8 +174,7 @@ class BackboneSwiftTests: XCTestCase {
     
     func testSyncShouldReturnHTTPErrorFor5xx () {
         
-        
-        
+    
         let url = "http://httpstat.us/500"
         model.url = url
         let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
@@ -196,5 +200,34 @@ class BackboneSwiftTests: XCTestCase {
     }
 
     
+    // MARK:  Delete
     
+    /**
+     Test naming convention for StarzPlay
+     */
+    func  testDeleteShouldSuccess() {
+    
+        let asyncExpectation = expectationWithDescription("testDeleteShouldSuccess")
+        
+        //given
+        let sut = TestClass()
+        sut.url = "http://httpbin.org/delete"
+        //when
+        sut.delete().then { (result) -> Void in
+            //then
+            XCTAssertTrue(result.response?.statusCode == 200);
+            
+            asyncExpectation.fulfill()
+            
+            }.error{ error  in
+                
+                XCTFail()
+                asyncExpectation.fulfill()
+        }
+ 
+        self.waitForExpectationsWithTimeout(100, handler:{ (error) in
+            print("test time out")
+        });
+    }
+
 }
