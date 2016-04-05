@@ -11,52 +11,30 @@ import PromiseKit
 import SwiftyJSON
 
 class BackBonner: Model{
-   
+    var name:String?
+    var pegBaseUrl:String?
 }
 
 class ViewController: UIViewController {
 
     
-//    var model: BackBone?
-//    
-//    func render(model:BackBone?) {
-//    
-//    
-//    }
-//    
+    var model: BackBonner?
+    
+    func render(model:BackBonner?) {
+    
+    }
+    
     override func viewDidLoad() {
+     
         super.viewDidLoad()
-//        var model = BackBonner();
-//        model.fetch(HttpOptions()).then { result -> Void in
-//            
-//             var t = result.models.first
-//           // self.process(t)
-//        }
-    }
-
-    
-    func process(d:BackBonner)  {
         
+        model = BackBonner();
+        model?.url = "http://mena-cdn-lb.aws.playco.com/prd-peg-data/default/iOS/starz_config.json"
+        model?.fetch(HttpOptions()).then { (model, string) -> Void in
+            print((model as? BackBonner)!.name);
+            self.render(model as? BackBonner)
+        }
     }
-    
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        
-//        class CollectionSubClas: Collection<Model> {
-//            
-////            override func parse(response: JSON) -> Promise<Array<Model>> {
-////                return Promise()
-////            }
-//
-//        }
-//        
-//        let col =  Collection<Model>(withUrl: " hola ")
-//        col.fetch()
-//        
-        
-        // Dispose of any resources that can be recreated.
-    }
-
 
 }
 

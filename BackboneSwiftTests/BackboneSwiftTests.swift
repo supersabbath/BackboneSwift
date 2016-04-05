@@ -99,7 +99,7 @@ class BackboneSwiftTests: XCTestCase {
         //url that returns error and JSON
         let url = "http://link.theplatform.eu/s"
         model.url = url
-        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        let asyncExpectation = expectationWithDescription("testSynchReturnsErrorWithJSONIfResponseReturnsJSON")
       
         
         model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
@@ -124,7 +124,7 @@ class BackboneSwiftTests: XCTestCase {
     func testSynchReturnsHTTPErrorIfResponseNotReturningJSON() {
         let url = "http://www.google.es"
         model.url = url
-        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        let asyncExpectation = expectationWithDescription("testSynchReturnsHTTPErrorIfResponseNotReturningJSON")
         model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in
@@ -148,7 +148,7 @@ class BackboneSwiftTests: XCTestCase {
     
         let url = "http://httpstat.us/304"
         model.url = url
-        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor3xx")
         model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in
@@ -177,7 +177,7 @@ class BackboneSwiftTests: XCTestCase {
     
         let url = "http://httpstat.us/500"
         model.url = url
-        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor5xx")
         model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in

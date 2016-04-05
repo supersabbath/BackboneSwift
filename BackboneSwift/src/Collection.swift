@@ -100,32 +100,26 @@ public enum BackboneError: ErrorType {
     case FailedPOST
 }
 
-public protocol  FetchResultContainer  {
-    
-    associatedtype PosibleModel
-    var models:[PosibleModel] { get }
+public protocol  ResponseAsociatedData  {
+
     var response: NSHTTPURLResponse? { get set }
     var isCacheResult:Bool { get set }
 }
 
-public struct FetchResult <T: BackboneModel>  : FetchResultContainer{
+public struct ResponseMetadata  : ResponseAsociatedData{
     
-    public var models:[T]
     public var response: NSHTTPURLResponse?
     public var isCacheResult = false
     
-    init( modelArray:[T]){
-        models = modelArray
-    }
-    
-    init( modelArray:[T] , fromCache:Bool){
-        models = modelArray
+    init(fromCache:Bool){
+ 
         isCacheResult = fromCache
     }
     
-    init( modelArray:[T] , httpResponse:NSHTTPURLResponse){
-        models = modelArray
+    init(httpResponse:NSHTTPURLResponse, fromCache:Bool){
+    
         response = httpResponse
+        isCacheResult = fromCache
     }
 }
 
@@ -140,21 +134,21 @@ public enum RESTMethod {
 public class Collection <GenericModel: BackboneModel>  :NSObject {
     
     public var models = [GenericModel]()
-    
+    public typealias CollectionResponse = (models:[GenericModel], response:ResponseMetadata)
     var url:String?
     public var delegate:BackboneDelegate?
     
     public init( withUrl:String) {
         url = withUrl
     }
-    
+
    
     // MARK: - PUBLIC BACKBONE METHODS 🅿️
     
     /**
     Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
     */
-    public func fetch(options:HttpOptions?=nil, onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void){
+    public func fetch(options:HttpOptions?=nil, onSuccess: (CollectionResponse)->Void , onError:(BackboneError)->Void){
         
         guard let feedURL = url  else {
             print("Collections must have an URL, fetch cancelled")
@@ -177,13 +171,14 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
 
     }
     
-    internal func synch(collectionURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void ){
+    internal func synch(collectionURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (CollectionResponse)->Void , onError:(BackboneError)->Void ){
         
         let json =  getJSONFromCache(collectionURL.URLString)
       
         guard json == nil else {
             self.parse(json!)
-            let result = FetchResult(modelArray: self.models, fromCache: true)
+            let response = ResponseMetadata(fromCache: true)
+            let result = (self.models,response)
             onSuccess(result)
             return
         }
@@ -191,8 +186,6 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
         Alamofire.request(Alamofire.Method(rawValue: method)!, collectionURL , headers:options?.headers )
             .validate()
             .responseJSON { response in
-                
-               
                 
                 switch response.result {
                 case .Success:
@@ -202,15 +195,14 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
                         self.addResponseToCache(jsonValue, cacheID: collectionURL.URLString)
                         
                         if let httpResponse = response.response {
-                         //   debugPrint(httpResponse)
-                            let result = FetchResult(modelArray: self.models , httpResponse:httpResponse)
-                            onSuccess(result)
-                        }else{
-                            let result = FetchResult(modelArray: self.models )
-                            onSuccess(result)
+                   
+                            let result = ResponseMetadata(httpResponse:httpResponse,fromCache: false)
+                            onSuccess((self.models , result))
+                            return
                         }
-        
                     }
+                    onError(.HttpError(description:"Unable to create Collection models"))
+                    
                 case .Failure(let error):
                     print(error)
                     onError(.HttpError(description: error.description))
@@ -221,7 +213,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
     }
     
     
-   internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (FetchResult<GenericModel>)->Void , onError:(BackboneError)->Void ){
+   internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (CollectionResponse)->Void , onError:(BackboneError)->Void ){
     
      //debugPrint(response.response) // URL response
         
@@ -238,7 +230,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
 
                 dispatch_async(dispatch_get_main_queue() , { () -> Void in
                     
-                    let result = FetchResult(modelArray: self.models )
+                    let result = (models: self.models,ResponseMetadata(fromCache: false ))
                     onSuccess(result)
                     
                 })
@@ -256,7 +248,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
                 if let jsonValue = response.result.value {
                     
                     self.parse(jsonValue)
-                    let result = FetchResult(modelArray: self.models )
+                    let result = (models: self.models,ResponseMetadata(fromCache: false ))
                     onSuccess(result)
                 }
             case .Failure(let error):
@@ -270,7 +262,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
     /**
      Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
      */
-   public func fetch(options:HttpOptions?=nil) -> Promise <FetchResult<GenericModel> >  {
+   public func fetch(options:HttpOptions?=nil) -> Promise < CollectionResponse >  {
         
         return Promise { fulfill, reject in
             
@@ -366,4 +358,14 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
         return nil
     }
 }
+
+
+protocol FetchableCollection {
+    
+    func fetch(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void)
+    func fetch(options:HttpOptions?) -> Promise <ResponseTuple>
+    
+}
+
+
 
