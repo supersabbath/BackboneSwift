@@ -216,7 +216,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
    internal func processResponse(response: Response<AnyObject,NSError> , onSuccess: (CollectionResponse)->Void , onError:(BackboneError)->Void ){
     
      //debugPrint(response.response) // URL response
-        
+
         if let d = self.delegate {
             
             switch response.result {

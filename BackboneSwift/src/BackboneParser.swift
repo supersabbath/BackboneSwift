@@ -13,6 +13,6 @@ import SwiftyJSON
 public protocol ViewControllerBack {
    
     associatedtype ModelType
-    var model:ModelType? {get set}
-    func render(model:ModelType?);
+    var model:ModelType? { get set }
+    func render(model:ModelType?)
 }
