@@ -10,31 +10,49 @@ import XCTest
 
 import PromiseKit
 
+/**
+    SUT Classes
+ */
+public class Project : Model {
+    
+    var full_name:String?
+    var name:String?
+    
+}
+
+public class Video : Model {
+    
+    var contentType : String?
+    var uri : String?
+}
+
+// End of  Classes
+
 class CollectionTest: XCTestCase {
     
     
-    var collection = Collection<Model>(withUrl: "")
+    var collection:Collection<Model>?
     
     override func setUp() {
         super.setUp()
         let m = Model()
- 
-        collection.push(m)
+        collection = Collection<Model>(withUrl: "")
+        collection!.push(m)
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        collection = nil
         super.tearDown()
     }
     
     func testPush(){
-        XCTAssertTrue(collection.models.count == 1, "should  have one and has: \(collection.models.count)")
+        XCTAssertTrue(collection!.models.count == 1, "should  have one and has: \(collection!.models.count)")
     }
     
     func testPop() {
-        collection.pop()
-        collection.pop()
-        XCTAssertTrue(collection.models.count == 0, "should  have one and has: \(collection.models.count)")
+        collection?.pop()
+        collection?.pop()
+        XCTAssertTrue(collection!.models.count == 0, "should  have one and has: \(collection?.models.count)")
     }
     
    
@@ -47,12 +65,6 @@ class CollectionTest: XCTestCase {
         let data = NSData(contentsOfFile: jsonPath!)
       
         let anyObject = JSONUtils().JSONFromBytes(data!)
-        
-        class Video : Model {
-            
-         public var contentType : String?
-         public var uri : String?
-        }
         
         let sutCollection = Collection<Video>(withUrl: "")
         
@@ -69,16 +81,8 @@ class CollectionTest: XCTestCase {
     func testGithubAPI_Promisefy (){
         
         
-        let asyncExpectation = expectationWithDescription("longRunningFunction")
-        
-        
-        class Project : Model {
-            
-            public  var full_name:String?
-            public  var name:String?
-            
-        }
-        
+        let asyncExpectation = expectationWithDescription("testGithubAPI_Promisefy")
+       
         let sutCollection = Collection <Project>(withUrl: "")
         
         sutCollection.url = "https://api.github.com/users/google/repos?page=1&per_page=7"
@@ -105,15 +109,7 @@ class CollectionTest: XCTestCase {
     func testGithubAPI (){
     
         
-        let asyncExpectation = expectationWithDescription("longRunningFunction")
-        
-
-         class Project : Model {
-            
-           public  var full_name:String?
-           public  var name:String?
-            
-        }
+        let asyncExpectation = expectationWithDescription("testGithubAPI")
         
         let sutCollection = Collection <Project>(withUrl: "")
         

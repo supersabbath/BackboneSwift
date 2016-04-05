@@ -11,7 +11,9 @@ import SwiftyJSON
 import PromiseKit
 
 @testable import BackboneSwift
-
+/**
+   SUTs:  TestClass and VideoSUT
+ */
 public class TestClass : Model {
     public var dd:String?
     public var juancarlos:String?
@@ -19,29 +21,48 @@ public class TestClass : Model {
 }
 
 
+public class VideoSUT : Model {
+   
+    var uri:String?
+    var language:String?
+    
+    override public func parse(response: JSONUtils.JSONDictionary) {
+        
+        let json = JSON(response)
+        if let videdDic = json["page"]["items"].arrayObject?.first {
+            
+            if let JSOnItem = videdDic as? JSONUtils.JSONDictionary{
+                
+                super.parse(JSOnItem)
+            }
+        }
+    }
+}
+
 
 class BackboneSwiftTests: XCTestCase {
     
-    let model = TestClass();
-    
+   
+    var model:TestClass?
     
     override func setUp() {
         super.setUp()
-        model.url = "www.google.com"
+         model = TestClass();
+         model?.url = "www.google.com"
     }
     
     override func tearDown() {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
+        model = nil
         super.tearDown()
     }
     
     func testParse() {
         
-        model.parse(["dd":"hola", "juancarlos":"dadfasdf"])
+        model?.parse(["dd":"hola", "juancarlos":"dadfasdf"])
 
       
-        XCTAssertEqual(model.dd, "hola")
-        XCTAssertEqual(model.juancarlos, "dadfasdf")
+        XCTAssertEqual(model?.dd, "hola")
+        XCTAssertEqual(model?.juancarlos, "dadfasdf")
         
     }
     
@@ -49,30 +70,13 @@ class BackboneSwiftTests: XCTestCase {
       
         self.measureBlock { [unowned self] in
             
-            self.model.parse(["dd":"hola", "juancarlos":"nothing","hoasd":"adfasdf","h2":"adfasdf"])
+            self.model?.parse(["dd":"hola", "juancarlos":"nothing","hoasd":"adfasdf","h2":"adfasdf"])
         }
     }
 
     func testModelFecth()
     {
         let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
-        
-        class VideoSUT : Model {
-            public var uri:String?
-            public var language:String?
-            
-            override func parse(response: JSONUtils.JSONDictionary) {
-                
-                let json = JSON(response)
-                if let videdDic = json["page"]["items"].arrayObject?.first {
-                   
-                    if let JSOnItem = videdDic as? JSONUtils.JSONDictionary{
-                    
-                        super.parse(JSOnItem)
-                    }
-                }
-            }
-        }
         
         let sut = VideoSUT();
         
@@ -98,20 +102,22 @@ class BackboneSwiftTests: XCTestCase {
         
         //url that returns error and JSON
         let url = "http://link.theplatform.eu/s"
-        model.url = url
-        let asyncExpectation = expectationWithDescription("testSynchReturnsErrorWithJSONIfResponseReturnsJSON")
+        model?.url = url
+        let asyncExpectation = expectationWithDescription("withJSONIfResponseReturnsJSON")
       
         
-        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+        model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
         }) { (error) -> Void in
             switch error {
                 case .ErrorWithJSON(let parameters):
                     XCTAssertTrue(parameters.count > 0)
                     asyncExpectation.fulfill()
+                    print("*********************************")
                     break
                 default:
                     XCTFail()
+                break
             }
         }
         self.waitForExpectationsWithTimeout(10, handler:{ (error) in
@@ -123,9 +129,10 @@ class BackboneSwiftTests: XCTestCase {
     
     func testSynchReturnsHTTPErrorIfResponseNotReturningJSON() {
         let url = "http://www.google.es"
-        model.url = url
-        let asyncExpectation = expectationWithDescription("testSynchReturnsHTTPErrorIfResponseNotReturningJSON")
-        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+    
+        model?.url = url
+        let asyncExpectation = expectationWithDescription("ResponseNotReturningJSON")
+        model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in
                 switch error {
@@ -147,9 +154,9 @@ class BackboneSwiftTests: XCTestCase {
     func testSyncShouldReturnHTTPErrorFor3xx () {
     
         let url = "http://httpstat.us/304"
-        model.url = url
+        model?.url = url
         let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor3xx")
-        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+        model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in
                 switch error {
@@ -176,9 +183,9 @@ class BackboneSwiftTests: XCTestCase {
         
     
         let url = "http://httpstat.us/500"
-        model.url = url
+        model?.url = url
         let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor5xx")
-        model.synch(model.url!, method: "GET", onSuccess: { (result) -> Void in
+        model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in
                 switch error {

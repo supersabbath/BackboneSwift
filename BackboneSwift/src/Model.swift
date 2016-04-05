@@ -105,13 +105,12 @@ public class Model: NSObject , BackboneModel {
         
         get {
             
-            if self.respondsToSelector("propertyName"){
+            if self.respondsToSelector(NSSelectorFromString("propertyName")){
                 
                 return valueForKey(propertyName)
             }else{
                 return nil
             }
-            
         }
         set(newValue) {
             
@@ -195,6 +194,7 @@ public class Model: NSObject , BackboneModel {
         
         guard let m = Alamofire.Method(rawValue: method ) else { onError(BackboneError.InvalidHTTPMethod); return }
         
+        var isProcessed  = false
         
         Alamofire.request(m, modelURL ,parameters:options?.body,  encoding: .JSON,headers:options?.headers)
             .validate(statusCode:200..<500).responseJSON { [weak self] response in
@@ -214,11 +214,13 @@ public class Model: NSObject , BackboneModel {
                                     
                                     let result = (ws as BackboneModel, response.response)
                                     onSuccess(result)
+                                    isProcessed = true
                                     return
                                     
                                     
                                 case 400..<499:
                                     onError(.ErrorWithJSON(parameters:dic))
+                             
                                     return
                                 default:
                                     break
@@ -231,24 +233,27 @@ public class Model: NSObject , BackboneModel {
                         return
                     }
                     onError(.ParsingError)
-                    
+                    return
                 case .Failure(let error):
                     print("\(error)")
                    // onError(.HttpError(description: error.description))
                 }
+      
             }.response { [weak self] request, response, data, error in
                 
-
                 if let _ = self {
                     
-                    var statusCode = 0
+                    guard !isProcessed else { return }
                    
-                    if let _ = response {
-                     statusCode = response!.statusCode
-                    }
+                    var statusCode = 0
                     
-                    onError(.HttpError(description: "\(statusCode)"))
-            
+                    if let _ = response?.statusCode {
+                    
+                        statusCode = response!.statusCode
+                    
+                        onError(.HttpError(description: "\(statusCode)"))
+    
+                    }
                 }
         }
     }
