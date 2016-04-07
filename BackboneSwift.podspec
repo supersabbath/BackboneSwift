@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
 s.name         = 'BackboneSwift'
-s.version      = '0.0.8'
+s.version      = '0.0.9'
 s.summary      = 'BackboneSwift'
 s.requires_arc = true
 s.platform = :ios, :tvos  
