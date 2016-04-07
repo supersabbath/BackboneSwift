@@ -49,8 +49,8 @@ public struct HttpOptions {
     
     public var useCache = true
     public var headers:[String:String]?
-    var query:String?
-    var body:[String:AnyObject]?
+    public var query:String?
+    public var body:[String:AnyObject]?
     
     
     public init(){}
@@ -67,7 +67,7 @@ public struct HttpOptions {
         query = queryString
     }
     
-    subscript(queryValues:String) -> String {
+    public subscript(queryValues:String) -> String {
         get {
             return query ?? ""
         }
@@ -78,7 +78,7 @@ public struct HttpOptions {
     
     
     
-    func stringifyBody()->String? {
+   public func stringifyBody()->String? {
        
         guard let requestBody = body else { return nil}
         
@@ -159,7 +159,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
         if let query = options?.query{
             
             let urlComponents = NSURLComponents(string: feedURL)
-           
+            debugPrint(urlComponents?.URLString)
             urlComponents?.query = query
             
             synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
