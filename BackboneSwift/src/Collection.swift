@@ -131,7 +131,7 @@ public enum RESTMethod {
 
 
 
-public class Collection <GenericModel: BackboneModel>  :NSObject {
+public class Collection <GenericModel: BackboneModel>  :NSObject{
     
     public var models = [GenericModel]()
     public typealias CollectionResponse = (models:[GenericModel], response:ResponseMetadata)
@@ -170,6 +170,8 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
         }
 
     }
+    
+    // TODO create() POST
     
     internal func synch(collectionURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (CollectionResponse)->Void , onError:(BackboneError)->Void ){
         
@@ -359,13 +361,6 @@ public class Collection <GenericModel: BackboneModel>  :NSObject {
     }
 }
 
-
-protocol FetchableCollection {
-    
-    func fetch(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void)
-    func fetch(options:HttpOptions?) -> Promise <ResponseTuple>
-    
-}
 
 
 

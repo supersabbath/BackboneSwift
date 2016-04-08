@@ -197,36 +197,33 @@ public class Model: NSObject , BackboneModel {
         var isProcessed  = false
         
         Alamofire.request(m, modelURL ,parameters:options?.body,  encoding: .JSON,headers:options?.headers)
-            .validate(statusCode:200..<500).responseJSON { [weak self] response in
+            .validate(statusCode:200..<500).responseJSON {  response in
                 
                 switch response.result {
                 case .Success:
-                    print("Save response \(response)")
+                   // print("Save response \(response)")
                     if let jsonValue = response.result.value {
                         
                         if let dic = jsonValue as? JSONUtils.JSONDictionary {
+                            let ws = self
                             
-                            if let ws = self {
-                                let statusCode = (response.response?.statusCode)!
-                                switch statusCode {
-                                case 200..<299:
-                                    ws.parse(dic)
-                                    
-                                    let result = (ws as BackboneModel, response.response)
-                                    onSuccess(result)
-                                    isProcessed = true
-                                    return
-                                    
-                                    
-                                case 400..<499:
-                                    onError(.ErrorWithJSON(parameters:dic))
-                             
-                                    return
-                                default:
-                                    break
-                                }
+                            let statusCode = (response.response?.statusCode)!
+                            switch statusCode {
+                            case 200..<299:
+                                ws.parse(dic)
+                                
+                                let result = (ws as BackboneModel, response.response)
+                                onSuccess(result)
+                                isProcessed = true
+                                return
                                 
                                 
+                            case 400..<499:
+                                onError(.ErrorWithJSON(parameters:dic))
+                                
+                                return
+                            default:
+                                break
                             }
                         }
                         onError(.HttpError(description: "Failed procesing model request"))
@@ -330,22 +327,23 @@ extension Model:Fetchable{
 
 // MARK:
 // MARK:  POST
-protocol Saveable {
-
-    func save(options:HttpOptions?) -> Promise <ResponseTuple>
-    func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
+protocol Createable {
+    
+    func create(options:HttpOptions?) -> Promise <ResponseTuple>
+    func create(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
     
 }
 
-extension Model:Saveable {
+
+extension Model:Createable {
     
     /**
-     Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP POST),
-     //TODO: if the model already exists on the server, the save will be an "update" (HTTP PUT).
+     Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP PUT),
      
+     Put does not affect the state of the object
      */
     
-    public func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void){
+    public func create(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void){
         // TODO:  improve this. We will have to add the attributes array
         // TODO : check if the attribute is new to do an put or a create
         guard validate() else { onError(.FailedPOST); return}
@@ -366,6 +364,62 @@ extension Model:Saveable {
      
      */
     
+    public func create(options:HttpOptions?=nil) -> Promise <ResponseTuple>  {
+        
+        return Promise(resolvers: {  fulfill, reject in
+            
+            create(options, onSuccess: { (result) -> Void in
+                
+                fulfill(result)
+                
+                }, onError: { (error) -> Void in
+                    reject (error )
+            })
+            
+        })
+        
+    }
+    
+}
+
+// MARK:
+// MARK:  PUT
+protocol Saveable {
+    
+    func save(options:HttpOptions?) -> Promise <ResponseTuple>
+    func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
+    
+}
+
+extension Model:Saveable {
+    
+    /**
+        Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP PUT),
+     
+        Put does not affect the state of the object
+     */
+    
+    public func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void){
+        // TODO:  improve this. We will have to add the attributes array
+        // TODO : check if the attribute is new to do an put or a create
+        guard validate() else { onError(.FailedPOST); return}
+        
+        guard let feedURL = url  else {
+            print("Models must have an URL, fetch cancelled")
+            onError(.InvalidURL)
+            return
+        }
+        print("Save") // URL response
+        synch(feedURL, method: "PUT", options: options,onSuccess: onSuccess, onError: onError)
+        
+    }
+    
+    /**
+        Promisefy version of Save
+     - seeAlso save()
+     
+     */
+    
     public func save(options:HttpOptions?=nil) -> Promise <ResponseTuple>  {
         
        return Promise(resolvers: {  fulfill, reject in
@@ -381,8 +435,6 @@ extension Model:Saveable {
         })
         
     }
-    
-    
     
 }
 
