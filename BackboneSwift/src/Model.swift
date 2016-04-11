@@ -263,6 +263,30 @@ public class Model: NSObject , BackboneModel {
         return true
     }
     
+    private func processOptions(baseUrl:String , inOptions:HttpOptions?, complete: (options:HttpOptions? , url: URLStringConvertible) -> Void) {
+    
+        
+        let urlComponents = NSURLComponents(string:baseUrl)!
+        
+        if let query = inOptions?.query{
+         
+            urlComponents.query = query
+        }
+        if let path = inOptions?.relativePath  {
+            
+            if let componnent = urlComponents.path {
+                   urlComponents.path = "\(componnent)/\(path)"
+            }else {
+                urlComponents.path = "/\(path)"
+            }
+        }
+        
+        complete(options: inOptions , url: urlComponents)
+        
+    }
+    
+    
+    
 }
 // MARK:
 // MARK: GET
@@ -287,18 +311,12 @@ extension Model:Fetchable{
             return
         }
         
-        if let query = options?.query{
+        
+        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
             
-            let urlComponents = NSURLComponents(string: feedURL)
-            
-            urlComponents?.query = query
-            
-            synch(urlComponents!, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-        }
-        else{
-            synch(feedURL, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-            
-        }
+            self.synch(url, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
+
+        })
         
     }
     
@@ -353,8 +371,12 @@ extension Model:Createable {
             onError(.InvalidURL)
             return
         }
-        print("Save") // URL response
-        synch(feedURL, method: "POST", options: options,onSuccess: onSuccess, onError: onError)
+
+        
+        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
+            
+            self.synch(url, method: "POST", options: options,onSuccess: onSuccess, onError: onError)
+        })
         
     }
     
@@ -409,9 +431,13 @@ extension Model:Saveable {
             onError(.InvalidURL)
             return
         }
-        print("Save") // URL response
-        synch(feedURL, method: "PUT", options: options,onSuccess: onSuccess, onError: onError)
         
+        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
+            
+            self.synch(url, method: "PUT", options: options,onSuccess: onSuccess, onError: onError)
+            
+        })
+ 
     }
     
     /**
@@ -472,7 +498,9 @@ extension Model: Deletable {
             onError(.InvalidURL)
             return
         }
+        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
         
-       synch(feedURL, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
+            self.synch(feedURL, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
+        })
     }
 }

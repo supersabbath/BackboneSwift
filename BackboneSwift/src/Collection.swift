@@ -51,7 +51,7 @@ public struct HttpOptions {
     public var headers:[String:String]?
     public var query:String?
     public var body:[String:AnyObject]?
-    
+    public var relativePath:String?
     
     public init(){}
     
