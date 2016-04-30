@@ -476,7 +476,7 @@ protocol Deletable {
 
 extension Model: Deletable {
 
-    func delete(options:HttpOptions?=nil) -> Promise <ResponseTuple> {
+    public func delete(options:HttpOptions?=nil) -> Promise <ResponseTuple> {
         
         return Promise{ (fulfill, reject ) in
            
@@ -491,7 +491,7 @@ extension Model: Deletable {
     }
     
     
-    func delete(options:HttpOptions? = nil, onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void) {
+   public func delete(options:HttpOptions? = nil, onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void) {
        
         guard let feedURL = url  else {
             print("Models must have an URL, DELETE cancelled")
