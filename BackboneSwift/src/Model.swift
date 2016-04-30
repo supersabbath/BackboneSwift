@@ -500,7 +500,7 @@ extension Model: Deletable {
         }
         processOptions(feedURL, inOptions: options  , complete: { (options, url) in
         
-            self.synch(feedURL, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
+            self.synch(url, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
         })
     }
 }
