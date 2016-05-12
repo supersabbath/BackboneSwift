@@ -7,7 +7,7 @@
 //
 
 import UIKit
-import SwiftyJSON
+
 
 
 public protocol ViewControllerBack {

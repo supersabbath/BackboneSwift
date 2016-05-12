@@ -68,6 +68,39 @@ public protocol BackboneCacheDelegate {
 
 public typealias BackboneDelegate = protocol<BackboneCacheDelegate, BackboneConcurrencyDelegate>
 
+// MARK: -
+// MARK:  Protocols
+
+protocol Deletable {
+    
+    func delete(options:HttpOptions?) -> Promise < ResponseTuple >
+    func delete(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
+    
+}
+
+protocol Saveable {
+    
+    func save(options:HttpOptions?) -> Promise <ResponseTuple>
+    func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
+    
+}
+
+protocol Fetchable {
+    
+    func fetch(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void)
+    func fetch(options:HttpOptions?) -> Promise <ResponseTuple>
+    
+}
+
+
+protocol Createable {
+    
+    func create(options:HttpOptions?) -> Promise <ResponseTuple>
+    func create(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
+    
+}
+
+
 
 public protocol BackboneModel
 {
@@ -88,7 +121,8 @@ public protocol BackboneModel
 }
 
 public typealias ResponseTuple =  (model:BackboneModel,response: NSHTTPURLResponse?)
-
+// MARK: -
+// MARK:  BackboneModel
 
 public class Model: NSObject , BackboneModel {
     
@@ -188,31 +222,29 @@ public class Model: NSObject , BackboneModel {
     }
     
     
-
     
     internal func synch(modelURL:URLStringConvertible , method:String , options:HttpOptions? = nil, onSuccess: (ResponseTuple)->Void , onError:(BackboneError)->Void ){
         
         guard let m = Alamofire.Method(rawValue: method ) else { onError(BackboneError.InvalidHTTPMethod); return }
         
         var isProcessed  = false
-        
+    
         Alamofire.request(m, modelURL ,parameters:options?.body,  encoding: .JSON,headers:options?.headers)
             .validate(statusCode:200..<500).responseJSON {  response in
                 
                 switch response.result {
                 case .Success:
                    // print("Save response \(response)")
+                    print("\(response.result.value )")
                     if let jsonValue = response.result.value {
                         
                         if let dic = jsonValue as? JSONUtils.JSONDictionary {
-                            let ws = self
-                            
+                
                             let statusCode = (response.response?.statusCode)!
                             switch statusCode {
                             case 200..<299:
-                                ws.parse(dic)
-                                
-                                let result = (ws as BackboneModel, response.response)
+                                self.parse(dic)
+                                let result = (self as BackboneModel, response.response)
                                 onSuccess(result)
                                 isProcessed = true
                                 return
@@ -225,32 +257,37 @@ public class Model: NSObject , BackboneModel {
                             default:
                                 break
                             }
+                        } else {
+                            print("No Json 22212")
+              
+                            return
                         }
-                        onError(.HttpError(description: "Failed procesing model request"))
-                        return
                     }
+                     print("No Json 2222")
                     onError(.ParsingError)
                     return
                 case .Failure(let error):
-                    print("\(error)")
-                   // onError(.HttpError(description: error.description))
+                  
+                    print("No Json \(error)")
+                    print("No Json 33333")
                 }
       
-            }.response { [weak self] request, response, data, error in
+            }.response {   request, response, data, error in
                 
-                if let _ = self {
+                guard !isProcessed else { return }
+                guard let statusCode = response?.statusCode  else {
                     
-                    guard !isProcessed else { return }
-                   
-                    var statusCode = 0
-                    
-                    if let _ = response?.statusCode {
-                    
-                        statusCode = response!.statusCode
-                    
-                        onError(.HttpError(description: "\(statusCode)"))
-    
-                    }
+                     print("No J4444")
+                    onError(BackboneError.HttpError(description: "No status code"))
+                    return
+                }
+                switch statusCode {
+                case 200..<399:
+                        onSuccess((self, response))
+                         print("No Json 555555")
+                default:
+                    onError(.HttpError(description: "\(statusCode)"))
+                       print("No Json 66666")
                 }
         }
     }
@@ -285,21 +322,9 @@ public class Model: NSObject , BackboneModel {
         
     }
     
+    // MARK:
+    // MARK: GET
     
-    
-}
-// MARK:
-// MARK: GET
-protocol Fetchable {
-
-    func fetch(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void)
-    func fetch(options:HttpOptions?) -> Promise <ResponseTuple>
-
-}
-
-extension Model:Fetchable{
-
-
     /**
      Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
      */
@@ -315,7 +340,7 @@ extension Model:Fetchable{
         processOptions(feedURL, inOptions: options  , complete: { (options, url) in
             
             self.synch(url, method: "GET", options: options,onSuccess: onSuccess, onError: onError)
-
+            
         })
         
     }
@@ -325,7 +350,7 @@ extension Model:Fetchable{
     /**
      Promisify Fetch the default set of models for this collection from the server, setting them on the collection when they arrive. The options hash takes success and error callbacks which will both be passed (collection, response, options) as arguments. When the model data returns from the server, it uses set to (intelligently) merge the fetched models, unless you pass {reset: true}, in which case the collection will be (efficiently) reset. Delegates to Backbone.sync under the covers for custom persistence strategies and returns a jqXHR. The server handler for fetch requests should return a JSON array of models.
      */
-
+    
     
     public func fetch(options:HttpOptions?=nil) -> Promise <ResponseTuple>  {
         
@@ -334,26 +359,96 @@ extension Model:Fetchable{
             fetch(options, onSuccess: { (response) in
                 
                 fulfill(response)
-             
+                
                 }, onError: { (error) in
-             
+                    
                     reject(error)
             })
         })
     }
-}
 
-// MARK:
-// MARK:  POST
-protocol Createable {
+    // MARK:
+    // MARK:  PUT
     
-    func create(options:HttpOptions?) -> Promise <ResponseTuple>
-    func create(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
+    /**
+     Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP PUT),
+     
+     Put does not affect the state of the object
+     */
     
-}
+    public func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void){
+        // TODO:  improve this. We will have to add the attributes array
+        // TODO : check if the attribute is new to do an put or a create
+        guard validate() else { onError(.FailedPOST); return}
+        
+        guard let feedURL = url  else {
+            print("Models must have an URL, fetch cancelled")
+            onError(.InvalidURL)
+            return
+        }
+        
+        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
+            
+            self.synch(url, method: "PUT", options: options,onSuccess: onSuccess, onError: onError)
+            
+        })
+        
+    }
+    
+    /**
+     Promisefy version of Save
+     - seeAlso save()
+     
+     */
+    
+    public func save(options:HttpOptions?=nil) -> Promise <ResponseTuple>  {
+        
+        return Promise(resolvers: {  fulfill, reject in
+            
+            save(options, onSuccess: { (result) -> Void in
+                
+                fulfill(result)
+                
+                }, onError: { (error) -> Void in
+                    reject (error )
+            })
+            
+        })
+        
+    }
+    
+    // MARK:
+    // MARK: DELETE
+    public func delete(options:HttpOptions?=nil) -> Promise <ResponseTuple> {
+        
+        return Promise{ (fulfill, reject ) in
+            
+            delete(options, onSuccess: { (result) -> Void in
+                
+                fulfill(result)
+                
+                }, onError: { (error) in
+                    reject(error)
+            })
+        }
+    }
+    
+    
+    public func delete(options:HttpOptions? = nil, onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void) {
+        
+        guard let feedURL = url  else {
+            print("Models must have an URL, DELETE cancelled")
+            onError(.InvalidURL)
+            return
+        }
+        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
+            
+            self.synch(url, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
+        })
+    }
 
-
-extension Model:Createable {
+    // MARK:
+    // MARK:  POST
     
     /**
      Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP PUT),
@@ -404,103 +499,7 @@ extension Model:Createable {
     
 }
 
-// MARK:
-// MARK:  PUT
-protocol Saveable {
-    
-    func save(options:HttpOptions?) -> Promise <ResponseTuple>
-    func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
-    
-}
-
-extension Model:Saveable {
-    
-    /**
-        Saves a model to your database (or alternative persistence layer), by delegating to Backbone.sync. If the model has a validate method, and validation fails, the model will not be saved. If the model isNew, the save will be a "create" (HTTP PUT),
-     
-        Put does not affect the state of the object
-     */
-    
-    public func save(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void){
-        // TODO:  improve this. We will have to add the attributes array
-        // TODO : check if the attribute is new to do an put or a create
-        guard validate() else { onError(.FailedPOST); return}
-        
-        guard let feedURL = url  else {
-            print("Models must have an URL, fetch cancelled")
-            onError(.InvalidURL)
-            return
-        }
-        
-        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
-            
-            self.synch(url, method: "PUT", options: options,onSuccess: onSuccess, onError: onError)
-            
-        })
- 
-    }
-    
-    /**
-        Promisefy version of Save
-     - seeAlso save()
-     
-     */
-    
-    public func save(options:HttpOptions?=nil) -> Promise <ResponseTuple>  {
-        
-       return Promise(resolvers: {  fulfill, reject in
-            
-            save(options, onSuccess: { (result) -> Void in
-                
-                    fulfill(result)
-                
-                }, onError: { (error) -> Void in
-                    reject (error )
-            })
-            
-        })
-        
-    }
-    
-}
-
-// MARK: -
-// MARK:  DELETE
-protocol Deletable {
-    
-    func delete(options:HttpOptions?) -> Promise < ResponseTuple >
-    func delete(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void);
-    
-}
 
 
-extension Model: Deletable {
 
-    public func delete(options:HttpOptions?=nil) -> Promise <ResponseTuple> {
-        
-        return Promise{ (fulfill, reject ) in
-           
-            delete(options, onSuccess: { (result) -> Void in
-                
-                    fulfill(result)
-                
-                }, onError: { (error) in
-                   reject(error)
-            })
-        }
-    }
-    
-    
-   public func delete(options:HttpOptions? = nil, onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void) {
-       
-        guard let feedURL = url  else {
-            print("Models must have an URL, DELETE cancelled")
-            onError(.InvalidURL)
-            return
-        }
-        processOptions(feedURL, inOptions: options  , complete: { (options, url) in
-        
-            self.synch(url, method: "DELETE", options: options,onSuccess: onSuccess, onError: onError)
-        })
-    }
-}
+

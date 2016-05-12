@@ -18,6 +18,7 @@ public class TestClass : Model {
     public var dd:String?
     public var juancarlos:String?
     
+    
 }
 
 
@@ -136,7 +137,7 @@ class BackboneSwiftTests: XCTestCase {
             XCTFail()
             }) { (error) -> Void in
                 switch error {
-                case .HttpError:
+                case .ParsingError:
                     XCTAssertNotNil(error)
                     asyncExpectation.fulfill()
                     break
@@ -156,18 +157,16 @@ class BackboneSwiftTests: XCTestCase {
         let url = "http://httpstat.us/304"
         model?.url = url
         let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor3xx")
+        
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
-            XCTFail()
+        
+                XCTAssertNotNil(result.model)
+                XCTAssertEqual( result.response!.statusCode , 304)
+                asyncExpectation.fulfill()
+
+
             }) { (error) -> Void in
-                switch error {
-                case .HttpError(let description):
-                    XCTAssertNotNil(error)
-                    XCTAssertEqual( description, "304")
-                    asyncExpectation.fulfill()
-                    break
-                default:
-                    XCTFail()
-                }
+                   XCTFail()
         }
         self.waitForExpectationsWithTimeout(10, handler:{ (error) in
             
@@ -236,5 +235,12 @@ class BackboneSwiftTests: XCTestCase {
             print("test time out")
         });
     }
-
+ 
+    
+    func  testIntVariables() {
+        let asyncExpectation = expectationWithDescription("testIntVariables")
+        class episode:Model {
+        
+        }
+    }
 }
