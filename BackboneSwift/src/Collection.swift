@@ -151,7 +151,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject{
     public func fetch(options:HttpOptions?=nil, onSuccess: (CollectionResponse)->Void , onError:(BackboneError)->Void){
         
         guard let feedURL = url  else {
-            print("Collections must have an URL, fetch cancelled")
+            debugPrint("Collections must have an URL, fetch cancelled")
             onError(.InvalidURL)
             return 
         }
@@ -239,7 +239,7 @@ public class Collection <GenericModel: BackboneModel>  :NSObject{
                 
             })
             case .Failure(let error):
-                print(error)
+                debugPrint(error)
                 onError(.HttpError(description: error.description))
             }
             

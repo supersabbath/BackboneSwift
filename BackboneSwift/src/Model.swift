@@ -257,36 +257,31 @@ public class Model: NSObject , BackboneModel {
                                 break
                             }
                         } else {
-                            print("No Json 22212")
-              
                             return
                         }
                     }
-                     print("No Json 2222")
                     onError(.ParsingError)
                     return
                 case .Failure(let error):
-                  
-                    print("No Json \(error)")
-                    print("No Json 33333")
+
+                    debugPrint("No Json \(error)")
                 }
       
             }.response {   request, response, data, error in
                 
                 guard !isProcessed else { return }
                 guard let statusCode = response?.statusCode  else {
-                    
-                     print("No J4444")
+                
                     onError(BackboneError.HttpError(description: "No status code"))
                     return
                 }
                 switch statusCode {
                 case 200..<399:
                         onSuccess((self, response))
-                         print("No Json 555555")
+                    
                 default:
                     onError(.HttpError(description: "\(statusCode)"))
-                       print("No Json 66666")
+                    
                 }
         }
     }
@@ -330,7 +325,7 @@ public class Model: NSObject , BackboneModel {
     public func fetch(options:HttpOptions? , onSuccess: (ResponseTuple) ->Void , onError:(BackboneError)->Void){
         
         guard let feedURL = url  else {
-            print("Collections must have an URL, fetch cancelled")
+            debugPrint("Collections must have an URL, fetch cancelled")
             onError(.InvalidURL)
             return
         }
