@@ -234,8 +234,7 @@ public class Model: NSObject , BackboneModel {
                 
                 switch response.result {
                 case .Success:
-                   // print("Save response \(response)")
-                    print("\(response.result.value )")
+                   
                     if let jsonValue = response.result.value {
                         
                         if let dic = jsonValue as? JSONUtils.JSONDictionary {
