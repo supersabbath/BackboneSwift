@@ -5,8 +5,8 @@ use_frameworks!
 
 def libraries
     
-    pod 'Alamofire', '~> 3.0'
-    pod 'PromiseKit', '~> 3.0.2'
+    pod 'Alamofire', '~> 3.4.0'
+    pod 'PromiseKit/CorePromise', '~> 3.2.0'
     pod 'SwiftyJSON', '~> 2.3.2'
     
 end
