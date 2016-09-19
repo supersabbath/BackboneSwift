@@ -128,13 +128,13 @@ class BackboneSwiftTests: XCTestCase {
 
     }
     
-    func testSynchReturnsHTTPErrorIfResponseNotReturningJSON() {
-        let url = "http://www.google.es"
+    func testSynchReturnsOKIfResponseNotReturningJSONAndStatusBetween200And399() {
+        let url = "http://www.google.es" // Expected status 200
     
         model?.url = url
         let asyncExpectation = expectationWithDescription("ResponseNotReturningJSON")
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
-            XCTFail()
+            asyncExpectation.fulfill()
             }) { (error) -> Void in
                 switch error {
                 case .ParsingError:
@@ -143,13 +143,29 @@ class BackboneSwiftTests: XCTestCase {
                     break
                 default:
                     XCTFail()
-                }
+            }
         }
         self.waitForExpectationsWithTimeout(10, handler:{ (error) in
             
             print("time out")
         });
-
+    }
+    
+    func testSynchReturnsHTTPErrorIfResponseNotReturningJSONAndStatusMoreThan400() {
+        let url = "http://httpstat.us/404" // Expected status 200
+        
+        model?.url = url
+        let asyncExpectation = expectationWithDescription("ResponseNotReturningJSON")
+        model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
+            XCTFail()
+        }) { (error) -> Void in
+            XCTAssertNotNil(error)
+            asyncExpectation.fulfill()
+        }
+        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+            
+            print("time out")
+        });
     }
     
     func testSyncShouldReturnHTTPErrorFor3xx () {
@@ -234,13 +250,5 @@ class BackboneSwiftTests: XCTestCase {
         self.waitForExpectationsWithTimeout(100, handler:{ (error) in
             print("test time out")
         });
-    }
- 
-    
-    func  testIntVariables() {
-        let asyncExpectation = expectationWithDescription("testIntVariables")
-        class episode:Model {
-        
-        }
     }
 }

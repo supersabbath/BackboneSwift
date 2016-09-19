@@ -251,7 +251,7 @@ public class Model: NSObject , BackboneModel {
                                 
                             case 400..<499:
                                 onError(.ErrorWithJSON(parameters:dic))
-                                
+                                isProcessed = true
                                 return
                             default:
                                 break
