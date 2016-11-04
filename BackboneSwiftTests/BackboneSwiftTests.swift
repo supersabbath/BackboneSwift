@@ -14,20 +14,20 @@ import PromiseKit
 /**
    SUTs:  TestClass and VideoSUT
  */
-public class TestClass : Model {
-    public var dd:String?
-    public var juancarlos:String?
+open class TestClass : Model {
+    open var dd:String?
+    open var juancarlos:String?
     
     
 }
 
 
-public class VideoSUT : Model {
+open class VideoSUT : Model {
    
     var uri:String?
     var language:String?
     
-    override public func parse(response: JSONUtils.JSONDictionary) {
+    override open func parse(_ response: JSONUtils.JSONDictionary) {
         
         let json = JSON(response)
         if let videdDic = json["page"]["items"].arrayObject?.first {
@@ -69,7 +69,7 @@ class BackboneSwiftTests: XCTestCase {
     
     func testPerformanceParse() {
       
-        self.measureBlock { [unowned self] in
+        self.measure { [unowned self] in
             
             self.model?.parse(["dd":"hola", "juancarlos":"nothing","hoasd":"adfasdf","h2":"adfasdf"])
         }
@@ -77,7 +77,7 @@ class BackboneSwiftTests: XCTestCase {
 
     func testModelFecth()
     {
-        let asyncExpectation = expectationWithDescription("modelFetchAsynchTest")
+        let asyncExpectation = expectation(description: "modelFetchAsynchTest")
         
         let sut = VideoSUT();
         
@@ -91,7 +91,7 @@ class BackboneSwiftTests: XCTestCase {
                  XCTFail()
         }
         
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -104,14 +104,14 @@ class BackboneSwiftTests: XCTestCase {
         //url that returns error and JSON
         let url = "http://link.theplatform.eu/s"
         model?.url = url
-        let asyncExpectation = expectationWithDescription("withJSONIfResponseReturnsJSON")
+        let asyncExpectation = expectation(description: "withJSONIfResponseReturnsJSON")
       
         
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
         }) { (error) -> Void in
             switch error {
-                case .ErrorWithJSON(let parameters):
+                case .errorWithJSON(let parameters):
                     XCTAssertTrue(parameters.count > 0)
                     asyncExpectation.fulfill()
                     print("*********************************")
@@ -121,7 +121,7 @@ class BackboneSwiftTests: XCTestCase {
                 break
             }
         }
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -132,12 +132,12 @@ class BackboneSwiftTests: XCTestCase {
         let url = "http://www.google.es" // Expected status 200
     
         model?.url = url
-        let asyncExpectation = expectationWithDescription("ResponseNotReturningJSON")
+        let asyncExpectation = expectation(description: "ResponseNotReturningJSON")
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             asyncExpectation.fulfill()
             }) { (error) -> Void in
                 switch error {
-                case .ParsingError:
+                case .parsingError:
                     XCTAssertNotNil(error)
                     asyncExpectation.fulfill()
                     break
@@ -145,7 +145,7 @@ class BackboneSwiftTests: XCTestCase {
                     XCTFail()
             }
         }
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -155,14 +155,14 @@ class BackboneSwiftTests: XCTestCase {
         let url = "http://httpstat.us/404" // Expected status 200
         
         model?.url = url
-        let asyncExpectation = expectationWithDescription("ResponseNotReturningJSON")
+        let asyncExpectation = expectation(description: "ResponseNotReturningJSON")
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
         }) { (error) -> Void in
             XCTAssertNotNil(error)
             asyncExpectation.fulfill()
         }
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -172,7 +172,7 @@ class BackboneSwiftTests: XCTestCase {
     
         let url = "http://httpstat.us/304"
         model?.url = url
-        let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor3xx")
+        let asyncExpectation = expectation(description: "testSyncShouldReturnHTTPErrorFor3xx")
         
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
         
@@ -184,7 +184,7 @@ class BackboneSwiftTests: XCTestCase {
             }) { (error) -> Void in
                    XCTFail()
         }
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -199,12 +199,12 @@ class BackboneSwiftTests: XCTestCase {
     
         let url = "http://httpstat.us/500"
         model?.url = url
-        let asyncExpectation = expectationWithDescription("testSyncShouldReturnHTTPErrorFor5xx")
+        let asyncExpectation = expectation(description: "testSyncShouldReturnHTTPErrorFor5xx")
         model?.synch(model!.url!, method: "GET", onSuccess: { (result) -> Void in
             XCTFail()
             }) { (error) -> Void in
                 switch error {
-                case .HttpError(let description):
+                case .httpError(let description):
                     XCTAssertNotNil(error)
                     XCTAssertEqual( description, "500")
                     asyncExpectation.fulfill()
@@ -213,7 +213,7 @@ class BackboneSwiftTests: XCTestCase {
                     XCTFail()
                 }
         }
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -229,7 +229,7 @@ class BackboneSwiftTests: XCTestCase {
      */
     func  testDeleteShouldSuccess() {
     
-        let asyncExpectation = expectationWithDescription("testDeleteShouldSuccess")
+        let asyncExpectation = expectation(description: "testDeleteShouldSuccess")
         
         //given
         let sut = TestClass()
@@ -247,7 +247,7 @@ class BackboneSwiftTests: XCTestCase {
                 asyncExpectation.fulfill()
         }
  
-        self.waitForExpectationsWithTimeout(100, handler:{ (error) in
+        self.waitForExpectations(timeout: 100, handler:{ (error) in
             print("test time out")
         });
     }

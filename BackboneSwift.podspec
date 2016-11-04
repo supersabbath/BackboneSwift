@@ -19,7 +19,7 @@ s.source = {
 s.source_files = 'BackboneSwift/src/*.{swift}', 'BackboneSwift/src/utils/*.{swift}'
 s.frameworks = 'UIKit'
 s.dependency 'SwiftyJSON'
-s.dependency 'Alamofire', '~> 3.5.0'
-s.dependency 'PromiseKit/CorePromise', '~> 3.5.0'
+s.dependency 'Alamofire'
+s.dependency 'PromiseKit/CorePromise'
  
 end

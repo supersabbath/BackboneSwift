@@ -10,13 +10,13 @@ import Foundation
 
 public struct JSONUtils {
     
-    public func JSONFromBytes(bytes: NSData ) -> AnyObject?
+    public func JSONFromBytes(_ bytes: Data ) -> AnyObject?
     {
-        let options = NSJSONReadingOptions(rawValue: 0)
+        let options = JSONSerialization.ReadingOptions(rawValue: 0)
         
         do {
-            let data =  try NSJSONSerialization.JSONObjectWithData(bytes, options: options)
-            return data
+            let data =  try JSONSerialization.jsonObject(with: bytes, options: options)
+            return data as AnyObject?
             
         }catch {
             print("error JSONStringify")
@@ -29,15 +29,15 @@ public struct JSONUtils {
     
     
     
-   public func JSONStringifyCommand( messageDictionary : Dictionary <String, AnyObject>) -> String?
+   public func JSONStringifyCommand( _ messageDictionary : Dictionary <String, AnyObject>) -> String?
     {
-        let options = NSJSONWritingOptions(rawValue: 0)
+        let options = JSONSerialization.WritingOptions(rawValue: 0)
         
-        if NSJSONSerialization.isValidJSONObject(messageDictionary) {
+        if JSONSerialization.isValidJSONObject(messageDictionary) {
             
             do {
-                let data =  try NSJSONSerialization.dataWithJSONObject(messageDictionary, options: options)
-                if let string = NSString(data: data, encoding: NSUTF8StringEncoding) {
+                let data =  try JSONSerialization.data(withJSONObject: messageDictionary, options: options)
+                if let string = NSString(data: data, encoding: String.Encoding.utf8.rawValue) {
                     return string as String
                 }
                 
@@ -50,14 +50,14 @@ public struct JSONUtils {
     }
     
     
-    func JSONSerialize( jsonSerializableObject : AnyObject ) -> NSData?
+    func JSONSerialize( _ jsonSerializableObject : AnyObject ) -> Data?
     {
-        let options = NSJSONWritingOptions(rawValue: 0)
+        let options = JSONSerialization.WritingOptions(rawValue: 0)
         
-        if NSJSONSerialization.isValidJSONObject(jsonSerializableObject) {
+        if JSONSerialization.isValidJSONObject(jsonSerializableObject) {
             
             do {
-                let data =  try NSJSONSerialization.dataWithJSONObject(jsonSerializableObject, options: options)
+                let data =  try JSONSerialization.data(withJSONObject: jsonSerializableObject, options: options)
                 return data
                 
             }catch {
@@ -78,15 +78,15 @@ public struct JSONUtils {
     public typealias JSONArray = Array<JSONUtils.JSON>
     
     
-    func JSONString(object: JSONUtils.JSON?) -> String? {
+    func JSONString(_ object: JSONUtils.JSON?) -> String? {
         return object as? String
     }
     
-    func JSONInt(object: JSONUtils.JSON?) -> Int? {
+    func JSONInt(_ object: JSONUtils.JSON?) -> Int? {
         return object as? Int
     }
     
-    func JSONObject(object: JSONUtils.JSON?) -> JSONDictionary? {
+    func JSONObject(_ object: JSONUtils.JSON?) -> JSONDictionary? {
         return object as? JSONDictionary
     }
     

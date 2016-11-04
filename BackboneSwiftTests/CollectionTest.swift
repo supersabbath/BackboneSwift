@@ -13,14 +13,14 @@ import PromiseKit
 /**
     SUT Classes
  */
-public class Project : Model {
+open class Project : Model {
     
     var full_name:String?
     var name:String?
     
 }
 
-public class Video : Model {
+open class Video : Model {
     
     var contentType : String?
     var uri : String?
@@ -58,11 +58,11 @@ class CollectionTest: XCTestCase {
    
     func testFecth() {
         
-        let bundle = NSBundle(identifier: "com.alphabit.BackboneSwiftTests")
+        let bundle = Bundle(identifier: "com.alphabit.BackboneSwiftTests")
       
-        let jsonPath = bundle?.pathForResource("videos", ofType: "json")
+        let jsonPath = bundle?.path(forResource: "videos", ofType: "json")
       
-        let data = NSData(contentsOfFile: jsonPath!)
+        let data = try? Data(contentsOf: URL(fileURLWithPath: jsonPath!))
       
         let anyObject = JSONUtils().JSONFromBytes(data!)
         
@@ -81,7 +81,7 @@ class CollectionTest: XCTestCase {
     func testGithubAPI_Promisefy (){
         
         
-        let asyncExpectation = expectationWithDescription("testGithubAPI_Promisefy")
+        let asyncExpectation = expectation(description: "testGithubAPI_Promisefy")
        
         let sutCollection = Collection <Project>(withUrl: "")
         
@@ -91,7 +91,7 @@ class CollectionTest: XCTestCase {
         
         sutCollection.fetch(HttpOptions()).then {
             x -> Void in
-            XCTAssertTrue((sutCollection.pop()?.full_name!.containsString("google")) == true)
+            XCTAssertTrue((sutCollection.pop()?.full_name!.contains("google")) == true)
             
             XCTAssertTrue(sutCollection.models.count !=  7, "should have the same number")
             
@@ -99,7 +99,7 @@ class CollectionTest: XCTestCase {
         }
         
         
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });
@@ -109,7 +109,7 @@ class CollectionTest: XCTestCase {
     func testGithubAPI (){
     
         
-        let asyncExpectation = expectationWithDescription("testGithubAPI")
+        let asyncExpectation = expectation(description: "testGithubAPI")
         
         let sutCollection = Collection <Project>(withUrl: "")
         
@@ -117,7 +117,7 @@ class CollectionTest: XCTestCase {
         
         sutCollection.fetch(HttpOptions(), onSuccess: { (objs) -> Void in
           
-            XCTAssertTrue((sutCollection.pop()?.full_name!.containsString("google")) == true)
+            XCTAssertTrue((sutCollection.pop()?.full_name!.contains("google")) == true)
             
             XCTAssertTrue(sutCollection.models.count !=  7, "should have the same number")
             
@@ -132,7 +132,7 @@ class CollectionTest: XCTestCase {
         
         sutCollection.fetch(HttpOptions()).then {
             x -> Void in
-            XCTAssertTrue((sutCollection.pop()?.full_name!.containsString("google")) == true)
+            XCTAssertTrue((sutCollection.pop()?.full_name!.contains("google")) == true)
             
             XCTAssertTrue(sutCollection.models.count !=  7, "should have the same number")
             
@@ -140,7 +140,7 @@ class CollectionTest: XCTestCase {
         }
         
         
-        self.waitForExpectationsWithTimeout(10, handler:{ (error) in
+        self.waitForExpectations(timeout: 10, handler:{ (error) in
             
             print("time out")
         });

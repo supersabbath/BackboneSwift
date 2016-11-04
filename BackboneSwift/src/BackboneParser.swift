@@ -14,5 +14,5 @@ public protocol ViewControllerBack {
    
     associatedtype ModelType
     var model:ModelType? { get set }
-    func render(model:ModelType?)
+    func render(_ model:ModelType?)
 }

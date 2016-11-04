@@ -20,7 +20,7 @@ class ViewController: UIViewController {
     
     var model: BackBonner?
     
-    func render(model:BackBonner?) {
+    func render(_ model:BackBonner?) {
     
     }
     
